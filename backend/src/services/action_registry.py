@@ -15,6 +15,10 @@ class ActionRegistry:
             return fn
         return decorator
 
+    def has(self, action_name: str) -> bool:
+        """Retorna True se existir handler registrado para `action_name`"""
+        return action_name.lower() in self._handlers
+
     def handle(self, action_name: str, db: Session, terrain_id: int, params: any):
         handler = self._handlers.get(action_name.lower())
         if handler:

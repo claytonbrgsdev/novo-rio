@@ -13,6 +13,9 @@ from .api_async.shop_item import router as shop_item_async_router
 from .api_async.purchase import router as purchase_async_router
 from .api_async.terrain import router as terrain_async_router
 from .api_async.player import router as player_async_router
+from .api_async.agents import router as agents_async_router
+from .api_async.climate_condition import router as climate_async_router
+from .api_async.badge import router as badge_async_router
 
 tags_metadata = [
     {"name": "players", "description": "CRUD de jogadores e gerenciamento de saldo"},
@@ -42,6 +45,9 @@ app.include_router(shop_item_async_router)
 app.include_router(purchase_async_router)
 app.include_router(terrain_async_router)
 app.include_router(player_async_router)
+app.include_router(agents_async_router)
+app.include_router(climate_async_router)
+app.include_router(badge_async_router)
 
 # Importar e incluir routers futuramente
 # from api import action

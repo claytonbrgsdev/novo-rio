@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Game from './Game'
 import TerrainList from './components/TerrainList'
 import RankingBoard from './components/RankingBoard'
+import TerrainDetail from './components/TerrainDetail'
 import './App.css'
 
 function App() {
@@ -14,6 +15,9 @@ function App() {
       <RankingBoard selectedPlayerId={selectedPlayerId} onSelect={setSelectedPlayerId} />
       <div className="game-container">
         <Game terrainId={selectedTerrainId} />
+      </div>
+      <div className="terrain-detail-container">
+        <TerrainDetail terrainId={selectedTerrainId} />
       </div>
       <div className="terrain-list-container">
         <TerrainList

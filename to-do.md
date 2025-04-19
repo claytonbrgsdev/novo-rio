@@ -20,11 +20,11 @@
 - [ ] Revisões de código via Pull Request (Must)
 
 ## 4. Integração WhatsApp
-- [ ] Criar endpoint POST /whatsapp-message para comandos (Must)
-- [ ] Processar NLP e mapear para ações predefinidas (Must)
+- [x] Criar endpoint POST /whatsapp-message para comandos (Must) (stubbed)
+- [x] Processar NLP e mapear para ações predefinidas (Must)
 - [ ] Implementar retry e fallback em webhooks (Should)
 - [ ] Implementar onboarding via WhatsApp (perfil e terreno padrão) (Should)
-- [ ] Tratar erros: comandos não reconhecidos e limites diários (Must)
+- [x] Tratar erros: comandos não reconhecidos e limites diários (Must)
 
 ## 5. Front-end (React + Phaser)
 
@@ -38,7 +38,7 @@
 ### 5.2. Funcionalidades 2D
 - [x] Renderizar terrenos 2D com Phaser (Must)
 - [ ] Exibir rankings e indicadores no Mapa Geral (Must)
-- [ ] Exibir status do terreno no Dashboard (Must)
+- [x] Exibir status do terreno no Dashboard (Must)
 - [ ] Ações manuais na UI (plantar, regar, colher) (Must)
 - [ ] Implementar lazy loading e otimizações de performance (Should)
 
@@ -70,3 +70,8 @@
 - [ ] Definir modelo de dados genérico para entidades e ações com parâmetros flexíveis (Must)
 - [ ] Implementar registry/factory para registro dinâmico de novas ações e entidades (Should)
 - [ ] Documentar padrão de extensão para adicionar futuras variações de ações/entidades (Should)
+
+## Notas Recentes
+- Atualizado seed.py para atribuir `player_id` ao criar terrenos e executar sem erros.
+- Seed inicial executada: 3 jogadores e 3 terrenos criados.
+- Removido header padrão do React no App.jsx

@@ -9,14 +9,13 @@ from ..crud.climate_condition import get_climate_conditions
 from ..schemas.terrain_parameters import TerrainParametersCreate, TerrainParametersUpdate
 from .action_registry import registry
 
-def update_terrain(action_name: str):
+def update_terrain(action_name: str, terrain_id: int = 1):
     """
     Stub de lógica de evolução do terreno.
     TODO: implementar efeitos de ação no TerrainParameters com base em action_name.
     """
     db = SessionLocal()
     try:
-        terrain_id = 1  # stub
         params = get_terrain_parameters(db, terrain_id)
         if not params:
             params_in = TerrainParametersCreate(
