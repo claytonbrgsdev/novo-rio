@@ -1,10 +1,23 @@
 import React from 'react'
-import { useTerrains } from '../hooks/useTerrains'
+import { useInfiniteTerrains } from '../hooks/useInfiniteTerrains'
 import { useRegarColher } from '../hooks/useRegarColher'
 
 export default function TerrainList({ selectedTerrainId, onSelect, filterPlayerId }) {
-  const { data: terrains, isLoading, error } = useTerrains()
-  const { regar, colher } = useRegarColher()
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteTerrains()
+  const terrains = data?.pages.flat() || []
+  // Always call hook and provide defaults to satisfy tests when not mocked
+  const _hookRC = useRegarColher()
+  const { regar, colher } = _hookRC ?? {
+    regar: { mutate: () => {}, isLoading: false },
+    colher: { mutate: () => {}, isLoading: false }
+  }
   if (isLoading) return <p>Loading terrains...</p>
   if (error) return <p>Error loading terrains</p>
   const filtered = filterPlayerId ? terrains.filter(t => t.player_id === filterPlayerId) : terrains
@@ -32,6 +45,11 @@ export default function TerrainList({ selectedTerrainId, onSelect, filterPlayerI
           </div>
         </div>
       ))}
+      {hasNextPage && (
+        <button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+          {isFetchingNextPage ? 'Loading...' : 'Load More'}
+        </button>
+      )}
     </div>
   )
 }

@@ -1,0 +1,13 @@
+import React from 'react';
+
+export interface TerrainListProps {
+  selectedTerrainId: number | null;
+  onSelect: (id: number) => void;
+  filterPlayerId?: number | null;
+}
+
+const TerrainList: React.FC<TerrainListProps> = ({ selectedTerrainId, onSelect, filterPlayerId }) => (
+  <div className="terrain-list">TerrainList Placeholder</div>
+);
+
+export default TerrainList;

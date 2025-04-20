@@ -1,0 +1,13 @@
+import React from 'react';
+
+interface TerrainDetailProps {
+  terrainId: number | null;
+}
+
+const TerrainDetail: React.FC<TerrainDetailProps> = ({ terrainId }) => (
+  <div className="terrain-detail">
+    TerrainDetail Placeholder {terrainId !== null ? `for ${terrainId}` : ' - selecione um terreno'}
+  </div>
+);
+
+export default TerrainDetail;

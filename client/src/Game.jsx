@@ -32,6 +32,10 @@ class GridScene extends Phaser.Scene {
           const ay = y + ch - 3 * (2 * agentRadius + margin) + row * (2 * agentRadius + margin) - margin;
           this.add.circle(ax, ay, agentRadius, 0x4caf50);
         }
+        // numeric indicator for agent count
+        this.add
+          .text(x + cw - 4, y + ch - 4, String(agentCount), { fontSize: '14px', color: '#ffeb3b' })
+          .setOrigin(1, 1);
       }
     }
   }

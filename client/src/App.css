@@ -40,3 +40,18 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Layout */
+.main-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 1rem 0;
+}
+.game-container {
+  flex: 2;
+}
+.terrain-detail-container,
+.terrain-list-container {
+  flex: 1;
+}

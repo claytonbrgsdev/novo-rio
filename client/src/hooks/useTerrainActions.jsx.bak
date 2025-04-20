@@ -9,21 +9,33 @@ export function useTerrainActions() {
     mutationFn: async (terrainId) => {
       await api.post('/whatsapp/message', { command: 'plantar', terrain_id: terrainId })
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['terrains'] }),
+    onSuccess: (_data, terrainId) => {
+      queryClient.invalidateQueries(['terrains'])
+      queryClient.invalidateQueries(['terrain', terrainId])
+      queryClient.invalidateQueries(['agents', terrainId])
+    },
   })
 
   const regar = useMutation({
     mutationFn: async (terrainId) => {
       await api.post('/whatsapp/message', { command: 'regar', terrain_id: terrainId })
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['terrains'] }),
+    onSuccess: (_data, terrainId) => {
+      queryClient.invalidateQueries(['terrains'])
+      queryClient.invalidateQueries(['terrain', terrainId])
+      queryClient.invalidateQueries(['agents', terrainId])
+    },
   })
 
   const colher = useMutation({
     mutationFn: async (terrainId) => {
       await api.post('/whatsapp/message', { command: 'colher', terrain_id: terrainId })
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['terrains'] }),
+    onSuccess: (_data, terrainId) => {
+      queryClient.invalidateQueries(['terrains'])
+      queryClient.invalidateQueries(['terrain', terrainId])
+      queryClient.invalidateQueries(['agents', terrainId])
+    },
   })
 
   return { plantar, regar, colher }
