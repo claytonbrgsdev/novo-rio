@@ -9,6 +9,8 @@ from src.schemas.purchase import PurchaseCreate
 
 @pytest.fixture(scope="module", autouse=True)
 def prepare_db():
+    # Clear existing DB state and create fresh schema
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)

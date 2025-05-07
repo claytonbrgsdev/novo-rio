@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -52,6 +56,47 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+.plant-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+}
+.cell {
+  border: 1px solid #ccc;
+  position: relative;
+  min-height: 80px;
+  padding: 4px;
+}
+.cell.empty {
+  background-color: #f9f9f9;
+}
+.cell button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.full {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(255, 0, 0, 0.8);
+  color: #fff;
+  padding: 2px 4px;
+  font-size: 0.75em;
+}
+.species-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.species-card {
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
 }
 
 @media (prefers-color-scheme: light) {

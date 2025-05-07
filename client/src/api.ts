@@ -5,3 +5,7 @@ const api = axios.create({
 });
 
 export default api;
+
+export const ollamaApi = axios.create({
+  baseURL: import.meta.env.VITE_OLLAMA_URL || 'http://127.0.0.1:11434',
+})

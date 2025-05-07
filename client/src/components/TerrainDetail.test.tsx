@@ -10,11 +10,13 @@ vi.mock('../api')
 
 const createWrapper = () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return ({ children }) => (
+  return ({
+    children
+  }: any) => (
     <QueryClientProvider client={queryClient}>
       {children}
     </QueryClientProvider>
-  )
+  );
 }
 
 test('prompts to select when no terrainId provided', () => {

@@ -33,3 +33,18 @@ def test_async_terrain_detail():
         tid = terrains[0]["id"]
         resp = client.get(f"/async/terrains/{tid}")
         assert resp.status_code in (200, 404)
+
+# Testar listagem de condições climáticas
+def test_async_climate_list():
+    response = client.get("/async/climate-conditions", params={"skip": 0, "limit": 10})
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+# Testar listagem de badges
+def test_async_badges_list():
+    players = client.get("/async/players").json()
+    assert players
+    pid = players[0]["id"]
+    response = client.get("/async/badges", params={"player_id": pid})
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)

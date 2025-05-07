@@ -16,7 +16,9 @@ test('useInfiniteTerrains fetches and paginates terrains', async () => {
 
   // Setup React Query client
   const queryClient = new QueryClient()
-  const wrapper = ({ children }) => (
+  const wrapper = ({
+    children
+  }: any) => (
     <QueryClientProvider client={queryClient}>
       {children}
     </QueryClientProvider>

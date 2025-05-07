@@ -10,6 +10,10 @@ import src.models  # ensure models are registered
 def create_tables():
     # Ensure DB schema is created
     Base.metadata.create_all(bind=engine)
+    # Seed initial data
+    from src.scripts.seed import seed_players, seed_terrains
+    seed_players()
+    seed_terrains()
     yield
     Base.metadata.drop_all(bind=engine)
 

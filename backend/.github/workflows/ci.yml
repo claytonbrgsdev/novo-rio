@@ -37,6 +37,9 @@ jobs:
         run: |
           pip install flake8
           flake8 src
-      - name: Run tests
-        run: |
-          pytest --maxfail=1 --disable-warnings -q
+      - name: Run backend tests
+        working-directory: backend
+        run: pytest --maxfail=1 --disable-warnings -q
+      - name: Run smoke test
+        working-directory: .
+        run: bash scripts/smoke_test.sh

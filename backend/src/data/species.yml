@@ -1,0 +1,90 @@
+# Conteúdo original comentado:
+# Caryocar_brasiliense:
+#   common_name: Pequi
+#   germinacao_dias: 45
+#   maturidade_dias: 270
+#   agua_diaria_min: 2
+#   espaco_m2: 3
+#   rendimento_unid: 8
+#   tolerancia_seca: alta
+#
+# Dipteryx_alata:
+#   common_name: Baru
+#   germinacao_dias: 20
+#   maturidade_dias: 150
+#   agua_diaria_min: 1
+#   espaco_m2: 2
+#   rendimento_unid: 15
+#   tolerancia_seca: media
+#
+# Inga_sp:
+#   common_name: Ingá
+#   germinacao_dias: 20
+#   maturidade_dias: 1460
+#   agua_diaria_min: 1.5
+#   espaco_m2: 2
+#   rendimento_unid: 45
+#   tolerancia_seca: media
+#
+# Bactris_gasipaes:
+#   common_name: Pupunha
+#   germinacao_dias: 80
+#   maturidade_dias: 730
+#   agua_diaria_min: 3
+#   espaco_m2: 6
+#   rendimento_unid: 2
+#   tolerancia_seca: baixa
+#
+# Theobroma_grandiflorum:
+#   common_name: Cupuaçu
+#   germinacao_dias: 15
+#   maturidade_dias: 900
+#   agua_diaria_min: 3
+#   espaco_m2: 8
+#   rendimento_unid: 20
+#   tolerancia_seca: baixa
+#
+Cajanus_cajan:             # Feijão‑guandu (pigeon pea)
+  common_name: Feijão guandu
+  germinacao_dias: 12      # germina em 10–15 dias  [oai_citation_attribution:0‡Gardening Know How](https://www.gardeningknowhow.com/edible/vegetables/pigeon-peas/pigeon-pea-growing-information.htm?utm_source=chatgpt.com)
+  maturidade_dias: 120     # primeiras vagens em ~4 meses  [oai_citation_attribution:1‡Gardening Know How](https://www.gardeningknowhow.com/edible/vegetables/pigeon-peas/pigeon-pea-growing-information.htm?utm_source=chatgpt.com)
+  agua_diaria_min: 1       # tolerante à seca, ~1 L/dia
+  espaco_m2: 1             # plantio a ~1 m²/planta
+  rendimento_unid: 20      # aprox. 20 vagens/planta
+  tolerancia_seca: alta
+
+Musa_spp:                  # Banana
+  common_name: Banana
+  germinacao_dias: 30      # folhagem estabelecida em ~1 mês
+  maturidade_dias: 270     # colheira em ~9 meses
+  agua_diaria_min: 5       # alta necessidade hídrica (~5 L/dia)
+  espaco_m2: 10            # requer ~10 m²/planta
+  rendimento_unid: 1       # 1 cacho/planta
+  tolerancia_seca: baixa
+
+Anacardium_occidentale:    # Cajuzinho (cajueiro)
+  common_name: Cajuzinho
+  germinacao_dias: 14      # 10–21 dias com pré‑soaking  [oai_citation_attribution:2‡The Survival Gardener](https://thesurvivalgardener.com/germinating-cashew-nuts/?utm_source=chatgpt.com)
+  maturidade_dias: 1095    # frutifica em ~3 anos
+  agua_diaria_min: 2       # média necessidade (2 L/dia)
+  espaco_m2: 9             # ~3 m × 3 m por árvore
+  rendimento_unid: 5       # 5 frutos/árvore (casca + “maçã”)
+  tolerancia_seca: média
+
+Tabebuia_impetiginosa:     # Ipê‑roxo
+  common_name: Ipê‑roxo
+  germinacao_dias: 3       # 50% em ~36 h a 30 ° C  [oai_citation_attribution:3‡Redalyc.org](https://www.redalyc.org/pdf/744/74410101.pdf?utm_source=chatgpt.com)
+  maturidade_dias: 730     # floresce aos ~2 anos
+  agua_diaria_min: 1       # seca tolerável, 1 L/dia
+  espaco_m2: 25            # copa ampla, ~5 m × 5 m
+  rendimento_unid: 0       # não gera fruto comestível
+  tolerancia_seca: alta
+
+Ananas_comosus:            # Abacaxi
+  common_name: Abacaxi
+  germinacao_dias: 30      # sementes viáveis em 4–8 semanas  [oai_citation_attribution:4‡Empress of Dirt](https://empressofdirt.net/grow-pineapple-seed/?utm_source=chatgpt.com)
+  maturidade_dias: 730     # 24 meses até frutificação  [oai_citation_attribution:5‡cactiguide.com](https://cactiguide.com/forum/viewtopic.php?t=37997&utm_source=chatgpt.com)
+  agua_diaria_min: 3       # demanda moderada (3 L/dia)
+  espaco_m2: 1             # ~1 m²/planta
+  rendimento_unid: 1       # 1 fruto/planta por ciclo
+  tolerancia_seca: média

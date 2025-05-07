@@ -10,7 +10,9 @@ import { vi } from 'vitest'
 // Mock api module
 vi.mock('../api')
 
-const createWrapper = (queryClient) => ({ children }) => (
+const createWrapper = (queryClient: any) => ({
+  children
+}: any) => (
   <QueryClientProvider client={queryClient}>
     {children}
   </QueryClientProvider>
@@ -21,7 +23,7 @@ describe('useTerrainActions hook', () => {
     ['plantar', 'plantar'],
     ['regar', 'regar'],
     ['colher', 'colher'],
-  ])('calls api.post and invalidates queries on %s', async (key, command) => {
+  ])('calls api.post and invalidates queries on %s', async (key: any, command: any) => {
     api.post = vi.fn().mockResolvedValue({})
     const queryClient = new QueryClient()
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')

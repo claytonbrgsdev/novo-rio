@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { FC } from 'react';
 
 interface InventoryTabsProps {
-  tools: any[];
-  inputs: any[];
-  plantables: any[];
-  counts: Record<string, number>;
+  tools: any[]
+  inputs: any[]
+  plantables: any[]
+  counts: Record<string, number>
 }
 
-const InventoryTabs: React.FC<InventoryTabsProps> = ({ tools, inputs, plantables, counts }) => (
+const InventoryTabs: FC<InventoryTabsProps> = ({ tools, inputs, plantables, counts }) => (
   <div className="inventory-tabs">InventoryTabs Placeholder</div>
 );
 

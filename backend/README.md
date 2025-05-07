@@ -2,6 +2,17 @@
 
 API construída com FastAPI e SQLAlchemy para gerenciar jogadores, terrenos, ações, itens, badges e condições climáticas.
 
+## 📦 Dependências
+Dependências testadas:
+- Python >=3.13
+- fastapi==0.95.2
+- SQLAlchemy>=2.0.20,<2.1
+- pydantic>=1.10.17,<2.0
+- redis>=4.6.0,<5.0.0
+- httpx>=0.23.0
+- pytest>=7.0.0
+- aiosqlite
+
 ## 📦 Instalação
 
 ```bash
@@ -18,9 +29,13 @@ pip install -r requirements.txt
 ## 🌐 Configuração
 
 Crie um arquivo `.env` com variáveis:
-
-```
+```env
 DATABASE_URL=sqlite:///./db.sqlite3
+SENTRY_DSN=<your_sentry_dsn>
+ENVIRONMENT=development
+REDIS_URL=redis://localhost
+OLLAMA_URL=http://127.0.0.1:11434
+LLM_MODEL=llama3.1:8b
 ```
 
 ## 🚀 Iniciando localmente
@@ -53,10 +68,21 @@ python src/scripts/seed.py
 - `/players` — CRUD de jogadores
 - `/terrains` — CRUD de terrenos
 - `/actions` — CRUD de ações
-- `/items` — CRUD de itens
-- `/badges` — CRUD de badges
-- `/climate-conditions` — CRUD de condições climáticas
+- `/shop_items` — CRUD de itens na loja
+- `/purchases` — Processar compras de itens
+- `/climate_conditions` — CRUD de condições climáticas
+- `/badges` — CRUD de badges e conquistas
 - `/whatsapp/message` — integração de comandos via WhatsApp
+- `/eko/` — proxy de chat para LLM, com contexto de conversa via Redis
+- `/eko/{conversation_id}` (DELETE) — limpa o contexto de conversa no Redis
+<!-- Endpoints assíncronos -->
+- `/async/players` — CRUD assíncrono de jogadores
+- `/async/shop-items` — CRUD assíncrono de itens da loja
+- `/async/purchases` — Processamento de compras de itens (assíncrono)
+- `/async/terrains` — CRUD assíncrono de terrenos
+- `/async/climate-conditions` — CRUD assíncrono de condições climáticas
+- `/async/badges` — CRUD assíncrono de badges
+- `/async/agents` — Listagem de agentes por quadrante (assíncrono)
 
 ## 📐 Grid de Terrenos e Agentes
 

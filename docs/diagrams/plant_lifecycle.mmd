@@ -1,0 +1,16 @@
+```mermaid
+stateDiagram-v2
+    [*] --> SEMENTE : plantar()
+    SEMENTE --> MUDINHA : daysSincePlanting ≥ germinacao_dias
+    MUDINHA --> MADURA   : daysSincePlanting ≥ maturidade_dias
+    MADURA --> COLHÍVEL  : fruto disponível
+    COLHÍVEL --> COLHIDA : colher()
+    SEMENTE --> MORTA    : diasSemRega > limiar(tolerancia_seca)
+    MUDINHA --> MORTA    : diasSemRega > limiar(tolerancia_seca)
+    MADURA --> MORTA     : diasSemRega > limiar(tolerancia_seca)
+    COLHÍVEL --> MORTA   : diasSemRega > limiar(tolerancia_seca)
+    COLHIDA --> [*]
+    MORTA   --> [*]
+```
+
+Use como referência: alta → 7 dias, média → 4 dias, baixa → 2 dias.

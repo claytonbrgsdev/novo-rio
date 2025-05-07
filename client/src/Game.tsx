@@ -1,14 +1,19 @@
+import React, { FC, useEffect, useRef } from 'react'
 import Phaser from 'phaser'
-import { useEffect, useRef } from 'react'
 import { useAgents } from './hooks/useAgents'
 
+interface GameProps {
+  terrainId?: number | null
+}
+
 class GridScene extends Phaser.Scene {
-  constructor(agentCounts) {
+  agentCounts: any;
+  constructor(agentCounts: any) {
     super('GridScene');
     this.agentCounts = agentCounts;
   }
   create() {
-    const { width, height } = this.sys.game.config;
+    const { width, height } = this.sys.game.config as any;
     const cols = 5, rows = 3;
     const cw = width / cols, ch = height / rows;
     const graphics = this.add.graphics();
@@ -41,10 +46,9 @@ class GridScene extends Phaser.Scene {
   }
 }
 
-
-const Game = ({ terrainId }) => {
-  const ref = useRef(null)
-  const { data: agentData } = useAgents(terrainId)
+const Game: FC<GameProps> = ({ terrainId = null }) => {
+  const ref = useRef<HTMLDivElement>(null)
+  const { data: agentData } = useAgents(terrainId!)
 
   useEffect(() => {
     // agentCounts: array de 15 inteiros (um por quadrante)

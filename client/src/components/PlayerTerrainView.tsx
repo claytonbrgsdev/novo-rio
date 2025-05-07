@@ -1,5 +1,6 @@
 import React, { FormEvent } from 'react';
 import './PlayerTerrainView.css';
+import MessageList from './MessageList';
 
 export interface ChatMessage { from?: 'player' | 'eko'; text: string; }
 export interface GridData { cols: number; rows: number; data: string[][]; }
@@ -75,11 +76,7 @@ const PlayerTerrainView: React.FC<PlayerTerrainViewProps> = ({
         <span className="player-name">{player.name}</span>
       </div>
       <div className="chat-section">
-        <div className="chat-log">
-          {chat.map((msg, i) => (
-            <div key={i} className={`chat-msg ${msg.from === 'player' ? 'player' : 'eko'}`}>{msg.text}</div>
-          ))}
-        </div>
+        <MessageList messages={chat} />
         <form className="chat-input" onSubmit={handleSubmit}>
           <input name="msg" placeholder="Digite sua mensagem aqui..." autoComplete="off" />
           <button type="submit">ENVIAR</button>

@@ -1,0 +1,7 @@
+Ação,Tipo,Materiais,Função,Fatores,Efeitos,Aplicação,Local,Riscos
+Plantar,Plantio direto,"Semente, solo, água",Germinação,"Umidade, tipo de solo, cobertura","Crescimento lento, risco de falha",Direto no plot,Terreno,Baixa taxa de sucesso
+Plantar,Plantio com muda,"Muda, solo fértil, água",Estabelecimento rápido,"Proteção, irrigação","Menor risco, crescimento mais rápido",Cova,Terreno,Baixo
+Irrigar,Regador manual,"Regador, água",Hidratar planta,"Clima, solo",Umidade pontual,Planta a planta,Terreno,Cansaço
+Podar,Formação,"Tesoura, faca",Direcionar crescimento,Idade da planta,Fortalece estrutura,Mudas,Terreno,Forma inadequada
+Podar,Poda especial,Motosserra,Abrir clareira,"Espécie, ciclo",Ativa trajetória ecológica,Pontual,Terreno,Risco alto
+Queimar,Controlada,"Biomassa seca, fósforo",Gerar cinza,"Clima, vento",Fertilidade e ativação de sementes,Plot,Terreno,Incêndio descontrolado

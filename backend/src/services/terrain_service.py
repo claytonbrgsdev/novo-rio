@@ -2,6 +2,8 @@
 Serviços relacionados à lógica de evolução do terreno.
 """
 
+import time
+import logging
 from sqlalchemy.orm import Session
 from ..db import SessionLocal
 from ..crud.terrain_parameters import get_terrain_parameters, create_terrain_parameters, update_terrain_parameters
@@ -9,30 +11,42 @@ from ..crud.climate_condition import get_climate_conditions
 from ..schemas.terrain_parameters import TerrainParametersCreate, TerrainParametersUpdate
 from .action_registry import registry
 
+logger = logging.getLogger(__name__)
+
 def update_terrain(action_name: str, terrain_id: int = 1):
     """
-    Stub de lógica de evolução do terreno.
-    TODO: implementar efeitos de ação no TerrainParameters com base em action_name.
+    Lógica de evolução do terreno com retry e fallback.
     """
     db = SessionLocal()
     try:
-        params = get_terrain_parameters(db, terrain_id)
-        if not params:
-            params_in = TerrainParametersCreate(
-                terrain_id=terrain_id,
-                soil_moisture=0,
-                fertility=0,
-                soil_ph=7.0,
-                organic_matter=0,
-                compaction=0,
-                coverage=0,
-                biodiversity=0,
-                regeneration_cycles=0,
-                spontaneous_species_count=0,
-            )
-            params = create_terrain_parameters(db, params_in)
-        # Handle action via registry
-        registry.handle(action_name, db, terrain_id, params)
+        success = False
+        for attempt in range(3):
+            try:
+                params = get_terrain_parameters(db, terrain_id)
+                if not params:
+                    params_in = TerrainParametersCreate(
+                        terrain_id=terrain_id,
+                        soil_moisture=0,
+                        fertility=0,
+                        soil_ph=7.0,
+                        organic_matter=0,
+                        compaction=0,
+                        coverage=0,
+                        biodiversity=0,
+                        regeneration_cycles=0,
+                        spontaneous_species_count=0,
+                    )
+                    params = create_terrain_parameters(db, params_in)
+                # Handle action via registry
+                registry.handle(action_name, db, terrain_id, params)
+                success = True
+                break
+            except Exception as e:
+                logger.warning(f"Attempt {attempt+1} failed for '{action_name}' on terrain {terrain_id}: {e}")
+                time.sleep(1)
+        if not success:
+            logger.error(f"Action '{action_name}' failed after 3 attempts on terrain {terrain_id}")
+            return
     except Exception:
         pass
     finally:

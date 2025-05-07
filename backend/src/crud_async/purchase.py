@@ -4,19 +4,19 @@ from sqlalchemy.future import select
 from ..models.purchase import Purchase
 from ..schemas.purchase import PurchaseCreate
 from ..models.shop_item import ShopItem
-from ..crud.player import get_player, update_player_balance
+from ..models.player import Player
 
 async def create_purchase_async(db: AsyncSession, purchase: PurchaseCreate) -> Purchase:
     # validações sync podem chamar crud existente
-    player = await db.get(get_player.__annotations__['return'].__self__, purchase.player_id)  # workaround
+    player = await db.get(Player, purchase.player_id)
     item = (await db.execute(select(ShopItem).where(ShopItem.id == purchase.shop_item_id))).scalars().first()
     if not player or not item:
         raise ValueError("Jogador ou item não encontrado")
     total_price = item.price * purchase.quantity
     if player.balance < total_price:
         raise ValueError("Saldo insuficiente")
-    # debita saldo
-    await update_player_balance(db, player.id, -total_price)
+    # debita saldo diretamente no objeto Player
+    player.balance -= total_price
     db_purchase = Purchase(player_id=purchase.player_id, shop_item_id=purchase.shop_item_id,
                            quantity=purchase.quantity, total_price=total_price)
     db.add(db_purchase)

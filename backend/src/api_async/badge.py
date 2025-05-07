@@ -1,30 +1,35 @@
 from typing import List
 from fastapi import APIRouter, Depends
-from starlette.concurrency import run_in_threadpool
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from ..db import get_async_db
+from sqlalchemy.orm import Session
+from ..db import SessionLocal
 from ..crud.badge import create_badge, get_badges
 from ..schemas.badge import BadgeCreate, BadgeOut
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 router = APIRouter(prefix="/async/badges", tags=["badges"])
 
 @router.post("/", response_model=BadgeOut)
-async def create_badge_async(
+def create_badge_endpoint(
     badge: BadgeCreate,
-    db: AsyncSession = Depends(get_async_db)
+    db: Session = Depends(get_db)
 ):
     """
-    Endpoint assíncrono para criar badge
+    Endpoint para criar badge
     """
-    return await run_in_threadpool(create_badge, db, badge)
+    return create_badge(db, badge)
 
 @router.get("/", response_model=List[BadgeOut])
-async def list_badges_async(
+def list_badges_endpoint(
     player_id: int,
-    db: AsyncSession = Depends(get_async_db)
+    db: Session = Depends(get_db)
 ):
     """
-    Endpoint assíncrono para listar badges de um jogador
+    Endpoint para listar badges de um jogador
     """
-    return await run_in_threadpool(get_badges, db, player_id)
+    return get_badges(db, player_id)

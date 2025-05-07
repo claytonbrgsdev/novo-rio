@@ -7,3 +7,6 @@ from .badge import Badge
 from .climate_condition import ClimateCondition
 from .shop_item import ShopItem
 from .purchase import Purchase
+from .species import Species
+from .planting import Planting
+from .plant_state_log import PlantStateLog

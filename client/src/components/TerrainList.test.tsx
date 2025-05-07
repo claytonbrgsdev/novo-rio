@@ -11,7 +11,9 @@ import { vi, describe, test, expect, afterEach } from 'vitest'
 afterEach(() => { vi.restoreAllMocks() })
 
 // React Query provider wrapper
-const wrapper = ({ children }) => (
+const wrapper = ({
+  children
+}: any) => (
   <QueryClientProvider client={new QueryClient()}>
     {children}
   </QueryClientProvider>
