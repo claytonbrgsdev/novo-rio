@@ -6,45 +6,51 @@ Executa criação de jogadores e terrenos padrão.
 import sys, os
 # adiciona a raiz do backend (parent de 'src') ao path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from src.db import SessionLocal
-from src.crud.player import create_player, get_players
+
+from src.crud_async.player import create_player_async, get_players_async
 from src.schemas.player import PlayerCreate
-from src.crud.terrain import create_terrain, get_terrains
+from src.crud_async.terrain import create_terrain_async, get_terrains_async
 from src.schemas.terrain import TerrainCreate
+import asyncio
 
-
-def seed_players():
-    db = SessionLocal()
-    existing = get_players(db)
+async def seed_players(db):
+    existing = await get_players_async(db)
     if not existing:
         defaults = ["Alice", "Bob", "Carol"]
         for name in defaults:
             player = PlayerCreate(name=name)
-            create_player(db, player)
+            await create_player_async(db, player)
         print(f"Seed: {len(defaults)} players created.")
     else:
         print("Seed: players already exist.")
-    db.close()
 
 
-def seed_terrains():
-    db = SessionLocal()
-    existing = get_terrains(db)
+async def seed_terrains(db):
+    existing = await get_terrains_async(db)
     if not existing:
-        players = get_players(db)
+        players = await get_players_async(db)
+        if not players:
+            print("Seed: No players found to assign terrains to. Please seed players first.")
+            return
         defaults = ["Floresta", "Rio", "Montanha"]
         for idx, title in enumerate(defaults):
             terrain = TerrainCreate(name=title, player_id=players[idx % len(players)].id)
-            create_terrain(db, terrain)
+            await create_terrain_async(db, terrain)
         print(f"Seed: {len(defaults)} terrains created.")
     else:
         print("Seed: terrains already exist.")
-    db.close()
 
 
 def main():
-    seed_players()
-    seed_terrains()
+    print("Standalone seeding script execution would require async setup.")
+    # Example of how it might look (requires AsyncSessionLocal from db.py):
+    # from src.db import AsyncSessionLocal
+    # async def _main():
+    #     async with AsyncSessionLocal() as session:
+    #         await seed_players(session)
+    #         await seed_terrains(session)
+    #         await session.commit()
+    # asyncio.run(_main())
 
 
 if __name__ == "__main__":

@@ -2,18 +2,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
+from ..db import get_db
 from ..crud.badge import create_badge, get_badges
 from ..schemas.badge import BadgeCreate, BadgeOut
 
 router = APIRouter(prefix="/badges", tags=["badges"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=BadgeOut,
              summary="Create Badge",

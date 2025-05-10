@@ -1,49 +1,3 @@
-# Conteúdo original comentado:
-# Caryocar_brasiliense:
-#   common_name: Pequi
-#   germinacao_dias: 45
-#   maturidade_dias: 270
-#   agua_diaria_min: 2
-#   espaco_m2: 3
-#   rendimento_unid: 8
-#   tolerancia_seca: alta
-#
-# Dipteryx_alata:
-#   common_name: Baru
-#   germinacao_dias: 20
-#   maturidade_dias: 150
-#   agua_diaria_min: 1
-#   espaco_m2: 2
-#   rendimento_unid: 15
-#   tolerancia_seca: media
-#
-# Inga_sp:
-#   common_name: Ingá
-#   germinacao_dias: 20
-#   maturidade_dias: 1460
-#   agua_diaria_min: 1.5
-#   espaco_m2: 2
-#   rendimento_unid: 45
-#   tolerancia_seca: media
-#
-# Bactris_gasipaes:
-#   common_name: Pupunha
-#   germinacao_dias: 80
-#   maturidade_dias: 730
-#   agua_diaria_min: 3
-#   espaco_m2: 6
-#   rendimento_unid: 2
-#   tolerancia_seca: baixa
-#
-# Theobroma_grandiflorum:
-#   common_name: Cupuaçu
-#   germinacao_dias: 15
-#   maturidade_dias: 900
-#   agua_diaria_min: 3
-#   espaco_m2: 8
-#   rendimento_unid: 20
-#   tolerancia_seca: baixa
-#
 Cajanus_cajan:             # Feijão‑guandu (pigeon pea)
   common_name: Feijão guandu
   germinacao_dias: 12      # germina em 10–15 dias  [oai_citation_attribution:0‡Gardening Know How](https://www.gardeningknowhow.com/edible/vegetables/pigeon-peas/pigeon-pea-growing-information.htm?utm_source=chatgpt.com)
@@ -69,6 +23,15 @@ Anacardium_occidentale:    # Cajuzinho (cajueiro)
   agua_diaria_min: 2       # média necessidade (2 L/dia)
   espaco_m2: 9             # ~3 m × 3 m por árvore
   rendimento_unid: 5       # 5 frutos/árvore (casca + “maçã”)
+  tolerancia_seca: média
+
+Zea_mays:                # Milho
+  common_name: Milho
+  germinacao_dias: 7      # germina em 5–14 dias  [oai_citation_attribution:6‡The Seed Collection](https://www.theseedcollection.com.au/growguide/corn-seeds)
+  maturidade_dias: 90     # colheita em 80–95 dias  [oai_citation_attribution:7‡Sweet Corn | Clemson Extension](https://hgic.clemson.edu/factsheet/sweet-corn/)
+  agua_diaria_min: 2      # demanda moderada (~2 L/dia)
+  espaco_m2: 1            # plantio a ~1 m²/planta
+  rendimento_unid: 2      # 1–2 espigas/planta  [oai_citation_attribution:8‡How to Plant and Grow Corn in Your Garden](https://www.bhg.com/how-to-plant-and-grow-sweet-corn-8597708)
   tolerancia_seca: média
 
 Tabebuia_impetiginosa:     # Ipê‑roxo

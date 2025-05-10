@@ -1,13 +1,23 @@
 fastapi==0.95.2
 uvicorn[standard]==0.22.0
+# descobrir qual dos dois esta sendo usado
 SQLAlchemy>=2.0.20,<2.1
+#sqlalchemy sql geral, pode ser postgres ou sqlite
 asyncpg==0.30.0
+
+#asyncpg (postgres) e aiosqlite (sqlite)
 aiosqlite==0.20.0
+# pydantic para validacao de dados
 pydantic>=1.10.17,<2.0
+#greenlet para execucao de threads
 greenlet>=2.0.3
+#sentry-sdk para monitoramento de erros
 sentry-sdk==1.20.0
+#redis para cache
 redis>=4.6.0,<5.0.0
+#PyYAML para serializacao de dados
 PyYAML>=6.0,<7.0
+#APScheduler para agendamento de tarefas
 APScheduler>=3.9,<4.0
 
 # Dev dependencies

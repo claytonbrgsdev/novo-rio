@@ -1,18 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
-from ..db import SessionLocal
+from ..db import get_db
 from ..crud.purchase import create_purchase, get_purchases, get_purchase
 from ..schemas.purchase import PurchaseCreate, PurchaseOut
 
 router = APIRouter(prefix="/purchases", tags=["purchases"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=PurchaseOut,
              summary="Create Purchase",

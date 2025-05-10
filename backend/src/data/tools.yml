@@ -1,0 +1,66 @@
+# src/data/tools.yml
+
+facao:
+  common_name: Facão
+  description: "Ferramenta manual para abrir clareiras e cortar vegetação leve."
+  task_type: limpar_clareira
+  efficiency: 1.0
+  durability: 100
+  compatible_with:
+    - leguminosa
+    - herbacea
+    - arborea
+  effects:
+    compaction: -1
+    coverage: 0
+
+pa:
+  common_name: Pá
+  description: "Usada para escavar sulcos e preparar o solo para plantio."
+  task_type: escavar
+  efficiency: 1.2
+  durability: 80
+  compatible_with:
+    - herbacea
+    - arborea
+  effects:
+    coverage: 5
+
+regador:
+  common_name: Regador
+  description: "Ferramenta para irrigação manual, ideal em pequenos plantios."
+  task_type: irrigar
+  efficiency: 1.5
+  durability: 200
+  compatible_with:
+    - all
+  effects:
+    soil_moisture: 10
+
+foice:
+  common_name: Foice
+  description: "Para podas leves e remoção de galhos finos ou ervas daninhas."
+  task_type: poda_leve
+  efficiency: 1.0
+  durability: 120
+  compatible_with:
+    - arborea
+  effects:
+    compaction: -1
+    coverage: 0
+
+motosserra:
+  common_name: Motosserra
+  description: >
+    Utilizada para podas estratégicas de árvores de grande porte na
+    agricultura sintrópica, acumulando biomassa e gerando cobertura
+    orgânica sem desmatamento.
+  task_type: poda_estrategica
+  efficiency: 2.0
+  durability: 50
+  compatible_with:
+    - arborea
+  effects:
+    compaction: -2
+    coverage: 0
+    organic_matter: 5

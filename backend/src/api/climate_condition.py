@@ -2,18 +2,11 @@ from typing import List
 from fastapi import APIRouter, Depends
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
+from ..db import get_db
 from ..crud.climate_condition import create_climate_condition, get_climate_conditions
 from ..schemas.climate_condition import ClimateConditionCreate, ClimateConditionOut
 
 router = APIRouter(prefix="/climate-conditions", tags=["climate_conditions"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=ClimateConditionOut,
              summary="Create Climate Condition",
