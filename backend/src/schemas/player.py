@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class PlayerBase(BaseModel):
@@ -23,3 +23,17 @@ class PlayerOut(PlayerBase):
 
     class Config:
         orm_mode = True
+
+
+class PlayerWithTerrainsOut(PlayerOut):
+    terrains: List['TerrainOut'] = []
+
+    class Config:
+        orm_mode = True
+
+
+# Import at the end to avoid circular imports
+from .terrain import TerrainOut
+
+# Update forward references
+PlayerWithTerrainsOut.update_forward_refs()

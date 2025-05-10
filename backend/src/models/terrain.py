@@ -38,3 +38,4 @@ class Terrain(Base):
 
     actions = relationship("Action", back_populates="terrain")
     terrain_params = relationship("TerrainParameters", back_populates="terrain")
+    quadrants = relationship("Quadrant", back_populates="terrain", cascade="all, delete-orphan")

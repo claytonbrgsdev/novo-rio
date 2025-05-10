@@ -45,10 +45,16 @@ def create_app(session_local=None, engine=None):
     from .api_async.tools import router as tools_async_router
     from .api.action import router as action_router
     from .api_async.action import router as action_async_router
+    from .api.quadrant import router as quadrant_router
+    from .api_async.quadrant import router as quadrant_async_router
+    from .api_async.plantings import router as plantings_async_router
+    from .api.inputs import router as inputs_router
+    from .api_async.inputs import router as inputs_async_router
 
     tags_metadata = [
         {"name": "players", "description": "CRUD de jogadores e gerenciamento de saldo"},
         {"name": "terrains", "description": "CRUD de terrenos e parâmetros de evolução"},
+        {"name": "quadrants", "description": "Gerenciamento de quadrantes dos terrenos (subdivisões 5x3)"},
         {"name": "actions", "description": "Execução de ações no terreno"},
         {"name": "shop_items", "description": "CRUD de itens na loja"},
         {"name": "purchases", "description": "Processar compras de itens"},
@@ -57,6 +63,7 @@ def create_app(session_local=None, engine=None):
         {"name": "whatsapp", "description": "Entrada de comandos via WhatsApp"},
         {"name": "agents", "description": "Listar agentes por quadrante do terreno"},
         {"name": "tools", "description": "CRUD de ferramentas e propriedades"},
+        {"name": "inputs", "description": "Aplicação de insumos agrícolas (água, fertilizante, composto) aos plantios"},
     ]
 
     app = FastAPI(
@@ -102,6 +109,11 @@ def create_app(session_local=None, engine=None):
     app.include_router(admin_router)
     app.include_router(action_router)
     app.include_router(action_async_router)
+    app.include_router(quadrant_router)
+    app.include_router(quadrant_async_router)
+    app.include_router(plantings_async_router)
+    app.include_router(inputs_router, prefix="/inputs", tags=["inputs"])
+    app.include_router(inputs_async_router, prefix="/async/inputs", tags=["inputs"])
     # Importar e incluir routers futuramente
     # from api import action
     # app.include_router(action.router)

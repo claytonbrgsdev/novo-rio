@@ -4,7 +4,9 @@ from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
 from ..db import get_db
 from ..crud.player import create_player, get_player, get_players, update_player, delete_player
-from ..schemas.player import PlayerCreate, PlayerUpdate, PlayerOut
+from ..schemas.player import PlayerCreate, PlayerUpdate, PlayerOut, PlayerWithTerrainsOut
+from ..schemas.terrain import TerrainOut
+from ..models.terrain import Terrain
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -49,3 +51,31 @@ async def delete_player_endpoint(player_id: int, db: Session = Depends(get_db)):
     """Deletes a player record."""
     await run_in_threadpool(delete_player, db, player_id)
     return None
+
+
+@router.get("/{player_id}/terrains", response_model=List[TerrainOut],
+           summary="Get Player's Terrains",
+           description="Retrieves all terrains owned by a specific player.\n\nExample path: `/players/1/terrains`\nExample response:\n```json\n[{ \"id\": 1, \"player_id\": 1, \"name\": \"Forest Lot\" }]\n```")
+async def get_player_terrains(player_id: int, db: Session = Depends(get_db)):
+    """Fetches all terrains for a specific player."""
+    # First verify the player exists
+    player = await run_in_threadpool(get_player, db, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Query terrains for this player
+    terrains = await run_in_threadpool(
+        lambda: db.query(Terrain).filter(Terrain.player_id == player_id).all()
+    )
+    return terrains
+
+
+@router.get("/{player_id}/with-terrains", response_model=PlayerWithTerrainsOut,
+            summary="Get Player with Terrains",
+            description="Retrieves a player along with all their terrains in a single response.\n\nExample path: `/players/1/with-terrains`")
+async def get_player_with_terrains(player_id: int, db: Session = Depends(get_db)):
+    """Fetches a player by ID with their associated terrains."""
+    player = await run_in_threadpool(get_player, db, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    return player

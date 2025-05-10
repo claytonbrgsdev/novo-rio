@@ -1,46 +1,85 @@
-# backend/src/tests/conftest.py
+# backend/tests/conftest.py
 
 import sys
 import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.pool import NullPool
-from src.db import Base, build_engine, build_session
-from src.app import create_app
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from src.db import Base, build_engine, build_session, get_async_db, get_db_override
+from src.main import app
 
+# Sync DB setup
 TEST_DATABASE_URL = "sqlite:///./test_tmp.db"
 TEST_ENGINE = build_engine(TEST_DATABASE_URL, poolclass=NullPool)
 TestingSessionLocal = build_session(TEST_ENGINE)
 
+# Async DB setup
+ASYNC_TEST_DATABASE_URL = "sqlite+aiosqlite:///./test_async_tmp.db"
+ASYNC_TEST_ENGINE = create_async_engine(
+    ASYNC_TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False}
+)
+AsyncTestingSessionLocal = sessionmaker(
+    bind=ASYNC_TEST_ENGINE,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
+
 @pytest.fixture(scope="session", autouse=True)
-def init_db():
-    # Cria o schema uma vez antes de todos os testes
+async def init_db():
+    # Create schema for sync db
     Base.metadata.create_all(bind=TEST_ENGINE)
+    
+    # Create schema for async db
+    async with ASYNC_TEST_ENGINE.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
     yield
-    # Destroi o schema ao final da sessão de testes
+    
+    # Clean up after tests
     Base.metadata.drop_all(bind=TEST_ENGINE)
+    
+    # Clean up async db
+    async with ASYNC_TEST_ENGINE.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 @pytest.fixture
-def db_session(monkeypatch):
+def db_session():
     """
-    Sobrescreve engine, SessionLocal e get_db para usar a sessão de testes em memória.
+    Returns a SQLAlchemy session for testing.
     """
-    # Override da fábrica de sessão e engine no módulo de DB
-    monkeypatch.setattr("src.db.engine", TEST_ENGINE)
-    monkeypatch.setattr("src.db.SessionLocal", TestingSessionLocal)
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.rollback()
+        db.close()
 
-    # Override do dependency get_db() em src.main
-    def _get_test_db():
-        db = TestingSessionLocal()
+@pytest.fixture
+def client(db_session):
+    """
+    Create a test client with overridden dependencies.
+    """
+    # Override the sync get_db dependency
+    def override_get_db():
         try:
-            yield db
+            yield db_session
         finally:
-            db.close()
-    monkeypatch.setattr("src.main.get_db", _get_test_db)
-
-    return TestingSessionLocal()
-
-@pytest.fixture
-def client():
-    app = create_app(TestingSessionLocal, TEST_ENGINE)
-    return TestClient(app)
+            pass
+    
+    # Override the async get_db dependency
+    def override_get_async_db():
+        try:
+            yield db_session
+        finally:
+            pass
+    
+    # Apply the overrides
+    from src.db import get_db
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_async_db()] = override_get_async_db
+    
+    with TestClient(app) as test_client:
+        yield test_client

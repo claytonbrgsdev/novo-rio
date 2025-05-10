@@ -1,9 +1,12 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from ..db import get_async_db
 from ..crud_async.player import create_player_async, get_players_async, get_player_async, update_player_async, delete_player_async
-from ..schemas.player import PlayerCreate, PlayerUpdate, PlayerOut
+from ..schemas.player import PlayerCreate, PlayerUpdate, PlayerOut, PlayerWithTerrainsOut
+from ..schemas.terrain import TerrainOut
+from ..models.terrain import Terrain
 
 router = APIRouter(prefix="/async/players", tags=["players"])
 
@@ -48,3 +51,30 @@ async def delete_player_endpoint(player_id: int, db: AsyncSession = Depends(get_
     """Deletes a player record asynchronously."""
     await delete_player_async(db, player_id)
     return None
+
+
+@router.get("/{player_id}/terrains", response_model=List[TerrainOut],
+            summary="Get Player's Terrains (async)",
+            description="Asynchronously retrieves all terrains owned by a specific player.\n\nExample path: `/async/players/1/terrains`\nExample response:\n```json\n[{ \"id\": 1, \"player_id\": 1, \"name\": \"Forest Lot\" }]\n```")
+async def get_player_terrains(player_id: int, db: AsyncSession = Depends(get_async_db())):
+    """Fetches all terrains for a specific player asynchronously."""
+    # First verify the player exists
+    player = await get_player_async(db, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    
+    # Query terrains for this player
+    result = await db.execute(select(Terrain).where(Terrain.player_id == player_id))
+    terrains = result.scalars().all()
+    return terrains
+
+
+@router.get("/{player_id}/with-terrains", response_model=PlayerWithTerrainsOut,
+            summary="Get Player with Terrains (async)",
+            description="Asynchronously retrieves a player along with all their terrains in a single response.\n\nExample path: `/async/players/1/with-terrains`")
+async def get_player_with_terrains(player_id: int, db: AsyncSession = Depends(get_async_db())):
+    """Fetches a player by ID with their associated terrains asynchronously."""
+    player = await get_player_async(db, player_id)
+    if not player:
+        raise HTTPException(status_code=404, detail="Player not found")
+    return player

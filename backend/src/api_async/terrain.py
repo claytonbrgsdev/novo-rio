@@ -1,6 +1,5 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..db import get_async_db
 from ..crud_async.terrain import (
@@ -10,7 +9,13 @@ from ..crud_async.terrain import (
     update_terrain_async,
     delete_terrain_async,
 )
+from ..crud_async.terrain_parameters import (
+    get_terrain_parameters_async,
+    get_terrain_health_report_async
+)
 from ..schemas.terrain import TerrainCreate, TerrainUpdate, TerrainOut
+from ..schemas.soil_health import SoilHealthReport
+from ..schemas.terrain_parameters import TerrainParametersWithHealthOut
 
 router = APIRouter(prefix="/async/terrains", tags=["terrains"])
 
@@ -52,3 +57,45 @@ async def delete_terrain_async_endpoint(
 ):
     await delete_terrain_async(db, terrain_id)
     return None
+
+@router.get("/{terrain_id}/soil-health", response_model=SoilHealthReport,
+            summary="Soil Health Index",
+            description="Retorna um relatório de saúde do solo para o terreno, incluindo índice de saúde, categoria e alertas.")
+async def get_soil_health_async_endpoint(
+    terrain_id: int, db: AsyncSession = Depends(get_async_db())
+):
+    """Retorna o índice de saúde do solo para um terreno."""
+    # Verificar se o terreno existe
+    terrain = await get_terrain_async(db, terrain_id)
+    if not terrain:
+        raise HTTPException(status_code=404, detail="Terreno não encontrado")
+    
+    # Obter o relatório de saúde do solo
+    health_report = await get_terrain_health_report_async(db, terrain_id)
+    return health_report
+
+@router.get("/{terrain_id}/parameters-with-health", response_model=TerrainParametersWithHealthOut,
+            summary="Terrain Parameters with Health Report",
+            description="Retorna os parâmetros do terreno junto com o relatório de saúde do solo.")
+async def get_terrain_params_with_health_async(
+    terrain_id: int, db: AsyncSession = Depends(get_async_db())
+):
+    """Retorna os parâmetros do terreno junto com relatório de saúde."""
+    # Verificar se o terreno existe
+    terrain = await get_terrain_async(db, terrain_id)
+    if not terrain:
+        raise HTTPException(status_code=404, detail="Terreno não encontrado")
+    
+    # Obter os parâmetros do terreno
+    terrain_params = await get_terrain_parameters_async(db, terrain_id)
+    if not terrain_params:
+        raise HTTPException(status_code=404, detail="Parâmetros do terreno não encontrados")
+    
+    # Obter o relatório de saúde do solo
+    health_report = await get_terrain_health_report_async(db, terrain_id)
+    
+    # Converter para o schema de saída e adicionar o relatório de saúde
+    result = TerrainParametersWithHealthOut.from_orm(terrain_params)
+    result.health_report = health_report
+    
+    return result

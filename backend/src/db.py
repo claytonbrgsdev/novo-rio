@@ -6,11 +6,32 @@ import os
 
 Base = declarative_base()
 
+# Obter URL do banco de dados do ambiente
+_db_url = os.getenv("DATABASE_URL")
+
+# Sync engine and session factory - adicionado para endpoints síncronos
+# Usar mesma URL que async, convertendo se necessário
+if not _db_url:
+    DATABASE_URL = "sqlite:///./test.db"
+elif _db_url.startswith("sqlite+aiosqlite"):
+    DATABASE_URL = "sqlite:///" + _db_url[17:]  # remove sqlite+aiosqlite://
+elif _db_url.startswith("postgresql+asyncpg"):
+    DATABASE_URL = "postgresql://" + _db_url[19:]  # remove postgresql+asyncpg://
+else:
+    DATABASE_URL = _db_url
+    
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 def get_db():
-    raise NotImplementedError("Use dependency override for get_db")
+    """Dependency for sync endpoints."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Async engine and session factory
-_db_url = os.getenv("DATABASE_URL")
 if not _db_url:
     ASYNC_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 elif _db_url.startswith("sqlite+aiosqlite"):

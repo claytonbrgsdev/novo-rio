@@ -53,6 +53,8 @@ def create_app(SessionLocal, engine):
     from .api_async.tools import router as tools_async_router
     from .api.action import router as action_router
     from .api_async.action import router as action_async_router
+    from .api.inputs import router as inputs_router
+    from .api_async.inputs import router as inputs_async_router
 
     app.include_router(whatsapp_router)
     app.include_router(player_router)
@@ -76,6 +78,8 @@ def create_app(SessionLocal, engine):
     app.include_router(tools_async_router)
     app.include_router(action_router)
     app.include_router(action_async_router)
+    app.include_router(inputs_router, prefix="/inputs", tags=["inputs"])
+    app.include_router(inputs_async_router, prefix="/async/inputs", tags=["inputs"])
 
     # Inicia o scheduler passando SessionLocal correto
     start_scheduler(SessionLocal)
