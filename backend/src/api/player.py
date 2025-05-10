@@ -2,18 +2,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
+from ..db import get_db
 from ..crud.player import create_player, get_player, get_players, update_player, delete_player
 from ..schemas.player import PlayerCreate, PlayerUpdate, PlayerOut
 
 router = APIRouter(prefix="/players", tags=["players"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=PlayerOut,
              summary="Create Player",

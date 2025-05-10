@@ -2,18 +2,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
+from ..db import get_db
 from ..crud.terrain import create_terrain, get_terrain, get_terrains, update_terrain_crud, delete_terrain
 from ..schemas.terrain import TerrainCreate, TerrainUpdate, TerrainOut
 
 router = APIRouter(prefix="/terrains", tags=["terrains"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/", response_model=TerrainOut,
              summary="Create Terrain",

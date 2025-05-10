@@ -9,6 +9,7 @@ class Player(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     balance = Column(Float, default=0.0)
+    aura = Column(Float, default=100.0)
     # TODO: adicionar outros campos (email, phone, etc.)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())

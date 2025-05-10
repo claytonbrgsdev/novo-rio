@@ -7,7 +7,7 @@ import logging
 from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
+
 from ..models import Planting, PlantStateLog, Action
 
 logger = logging.getLogger(__name__)
@@ -38,11 +38,10 @@ def load_species_params(file_path: str = None) -> dict:
 TOLERANCE_LIMITS = {'alta': 7, 'media': 4, 'baixa': 2}
 
 
-def tick_day():
+def tick_day(db: Session):
     """
     Executa um tick diário: incrementa dias, checa rega, faz transições de estado e grava logs.
     """
-    db: Session = SessionLocal()
     try:
         # Hot-reload de species.yml antes do ciclo
         species_params = load_species_params("src/data/species.yml")

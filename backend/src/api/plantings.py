@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..db import SessionLocal
+from ..db import get_db_override
 from ..models.planting import Planting
 from ..schemas.planting import PlantingSchema
 
