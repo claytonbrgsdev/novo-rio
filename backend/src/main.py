@@ -30,6 +30,7 @@ def create_app(session_local=None, engine=None):
     from .api.climate_condition import router as climate_router
     from .api.shop_item import router as shop_item_router
     from .api.purchase import router as purchase_router
+    from .api.auth import router as auth_router
     from .api_async.shop_item import router as shop_item_async_router
     from .api_async.purchase import router as purchase_async_router
     from .api_async.terrain import router as terrain_async_router
@@ -37,6 +38,7 @@ def create_app(session_local=None, engine=None):
     from .api_async.agents import router as agents_async_router
     from .api_async.climate_condition import router as climate_async_router
     from .api_async.badge import router as badge_async_router
+    from .api_async.auth import router as auth_async_router
     from .api.eko import router as eko_router
     from .api.plantings import router as plantings_router
     from .api.species import router as species_router
@@ -50,6 +52,16 @@ def create_app(session_local=None, engine=None):
     from .api_async.plantings import router as plantings_async_router
     from .api.inputs import router as inputs_router
     from .api_async.inputs import router as inputs_async_router
+    from .api.character import router as character_router
+    from .api_async.character import router as character_async_router
+    from .api.player_profile import router as player_profile_router
+    from .api.player_progress import router as player_progress_router
+    from .api.player_settings import router as player_settings_router
+    from .api_async.player_profile import router as player_profile_async_router
+    from .api_async.player_progress import router as player_progress_async_router
+    from .api_async.player_settings import router as player_settings_async_router
+    from .api.player_link import router as player_link_router
+    from .api.test import router as test_router
 
     tags_metadata = [
         {"name": "players", "description": "CRUD de jogadores e gerenciamento de saldo"},
@@ -64,6 +76,7 @@ def create_app(session_local=None, engine=None):
         {"name": "agents", "description": "Listar agentes por quadrante do terreno"},
         {"name": "tools", "description": "CRUD de ferramentas e propriedades"},
         {"name": "inputs", "description": "Aplicação de insumos agrícolas (água, fertilizante, composto) aos plantios"},
+        {"name": "characters", "description": "Gerenciamento de personagens customizados dos jogadores"},
     ]
 
     app = FastAPI(
@@ -94,13 +107,7 @@ def create_app(session_local=None, engine=None):
     app.include_router(climate_router)
     app.include_router(shop_item_router)
     app.include_router(purchase_router)
-    app.include_router(shop_item_async_router)
-    app.include_router(purchase_async_router)
-    app.include_router(terrain_async_router)
-    app.include_router(player_async_router)
-    app.include_router(agents_async_router)
-    app.include_router(climate_async_router)
-    app.include_router(badge_async_router)
+    app.include_router(auth_router)
     app.include_router(eko_router)
     app.include_router(plantings_router)
     app.include_router(species_router)
@@ -109,11 +116,22 @@ def create_app(session_local=None, engine=None):
     app.include_router(admin_router)
     app.include_router(action_router)
     app.include_router(action_async_router)
+    app.include_router(auth_async_router)
     app.include_router(quadrant_router)
     app.include_router(quadrant_async_router)
     app.include_router(plantings_async_router)
     app.include_router(inputs_router, prefix="/inputs", tags=["inputs"])
     app.include_router(inputs_async_router, prefix="/async/inputs", tags=["inputs"])
+    app.include_router(character_router)
+    app.include_router(character_async_router)
+    app.include_router(player_profile_router)
+    app.include_router(player_progress_router)
+    app.include_router(player_settings_router)
+    app.include_router(player_profile_async_router)
+    app.include_router(player_progress_async_router)
+    app.include_router(player_settings_async_router)
+    app.include_router(player_link_router)
+    app.include_router(test_router)
     # Importar e incluir routers futuramente
     # from api import action
     # app.include_router(action.router)

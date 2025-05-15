@@ -1,0 +1,14 @@
+pydantic>=1.10,<2.0
+email-validator
+pytest
+pytest-asyncio
+fastapi[test]
+
+# Drivers de banco de dados
+psycopg2-binary  # Driver PostgreSQL
+aiosqlite        # Driver SQLite assíncrono
+
+# Ferramentas de desenvolvimento
+ipython
+black
+isort

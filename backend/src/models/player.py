@@ -26,3 +26,4 @@ class Player(Base):
     terrains = relationship("Terrain", back_populates="player")
     purchases = relationship("Purchase", back_populates="player")
     plantings = relationship("Planting", back_populates="player")
+    characters = relationship("Character", back_populates="player", cascade="all, delete-orphan")

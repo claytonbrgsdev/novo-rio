@@ -13,19 +13,8 @@ from .quadrant_neighbors import propagate_effect_to_neighbors
 
 logger = logging.getLogger(__name__)
 
-# Fatores de deterioração diária para cada parâmetro (valores em %)
-DAILY_DETERIORATION_FACTORS = {
-    "soil_moisture": 2.5,     # Perda diária de 2.5% da umidade
-    "organic_matter": 0.8,    # Perda diária de 0.8% da matéria orgânica
-    "biodiversity": 0.5,      # Perda diária de 0.5% da biodiversidade
-}
-
-# Limites mínimos de cada parâmetro após deterioração
-MIN_VALUES = {
-    "soil_moisture": 5.0,     # A umidade natural não cai abaixo de 5%
-    "organic_matter": 3,      # A matéria orgânica não cai abaixo de 3
-    "biodiversity": 2,        # A biodiversidade não cai abaixo de 2
-}
+# Importando constantes do módulo de constantes do solo
+from .soil_constants import DAILY_DETERIORATION_FACTORS, MIN_VALUES
 
 def apply_daily_deterioration(db: Session) -> Dict[str, int]:
     """

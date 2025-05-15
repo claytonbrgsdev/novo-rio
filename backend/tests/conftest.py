@@ -7,8 +7,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy.pool import NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+from datetime import timedelta
 from src.db import Base, build_engine, build_session, get_async_db, get_db_override
 from src.main import app
+from src.crud.user import create_user
+from src.schemas.user import UserCreate
+from src.auth.security import create_access_token
 
 # Sync DB setup
 TEST_DATABASE_URL = "sqlite:///./test_tmp.db"
@@ -29,6 +33,12 @@ AsyncTestingSessionLocal = sessionmaker(
 
 @pytest.fixture(scope="session", autouse=True)
 async def init_db():
+    # Import all models to ensure they are registered with the Base metadata
+    from src.models.user import User
+    from src.models.player import Player
+    from src.models.terrain import Terrain
+    # ... import outros modelos necessários
+    
     # Create schema for sync db
     Base.metadata.create_all(bind=TEST_ENGINE)
     
@@ -83,3 +93,26 @@ def client(db_session):
     
     with TestClient(app) as test_client:
         yield test_client
+
+@pytest.fixture
+def auth_headers(db_session):
+    """
+    Cria um usuário de teste e retorna headers de autenticação com seu token JWT.
+    """
+    # Criar usuário de teste
+    user_create = UserCreate(
+        email="test@user.com",
+        password="password123",
+        player_id=None
+    )
+    user = create_user(db_session, user_create)
+    
+    # Gerar token JWT com user_id e email no payload
+    token = create_access_token(
+        data={"sub": user.email, "user_id": user.id},
+        expires_delta=timedelta(minutes=30)
+    )
+    
+    # Retornar cabeçalhos de autenticação e o usuário
+    headers = {"Authorization": f"Bearer {token}"}
+    return headers, user
