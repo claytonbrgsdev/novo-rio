@@ -99,6 +99,33 @@ const config: Config = {
       fontFamily: {
         handwritten: ["var(--font-patrick-hand)", "var(--font-architects-daughter)", "var(--font-caveat)", "cursive"],
       },
+      keyframes: {
+        "gentle-bounce": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
+        "float-slow": {
+          "0%": { transform: "translateY(0px) translateX(0px)", opacity: "0.2" },
+          "50%": { transform: "translateY(-15px) translateX(5px)", opacity: "0.7" },
+          "100%": { transform: "translateY(-30px) translateX(0px)", opacity: "0.2" },
+        },
+        "float-medium": {
+          "0%": { transform: "translateY(0px) translateX(0px)", opacity: "0.2" },
+          "50%": { transform: "translateY(-20px) translateX(-5px)", opacity: "0.6" },
+          "100%": { transform: "translateY(-40px) translateX(0px)", opacity: "0.2" },
+        },
+        "float-fast": {
+          "0%": { transform: "translateY(0px) translateX(0px)", opacity: "0.2" },
+          "50%": { transform: "translateY(-25px) translateX(8px)", opacity: "0.5" },
+          "100%": { transform: "translateY(-50px) translateX(0px)", opacity: "0.2" },
+        },
+      },
+      animation: {
+        "gentle-bounce": "gentle-bounce 3s ease-in-out infinite",
+        "float-slow": "float-slow 8s ease-in-out infinite",
+        "float-medium": "float-medium 6s ease-in-out infinite",
+        "float-fast": "float-fast 4s ease-in-out infinite",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

@@ -36,11 +36,9 @@ const api = axios.create({
 
 // Interceptor para adicionar token de autenticação nas requisições
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  // Se houver um token no localStorage, adiciona ao header
-  const token = getAuthToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  // BYPASS AUTHENTICATION: Always use debug token
+  const debugToken = 'debug_token_bypass_authentication';
+  config.headers.Authorization = `Bearer ${debugToken}`;
   
   // Log detalhado de todas as requisições
   console.log(`→ API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`, {
@@ -56,41 +54,14 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
   (response) => response, // Passa as respostas bem-sucedidas diretamente
   (error: AxiosError) => {
-    // Trata especificamente erros relacionados à autenticação
-    if (error.response) {
-      const status = error.response.status;
-      
-      // Caso 401 Unauthorized
-      if (status === 401) {
-        // Limpa o localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(AUTH_STORAGE_KEYS.TOKEN);
-          localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
-          
-          // Verificar se já existe um evento de autenticação em processamento
-          const isProcessingAuth = window.sessionStorage.getItem('processing_auth_event');
-          
-          if (!isProcessingAuth) {
-            // Marcar que estamos processando um evento de autenticação
-            window.sessionStorage.setItem('processing_auth_event', 'true');
-            
-            // Emite evento para notificar a aplicação que o usuário está desautorizado
-            // Se a resposta contém informação de token expirado
-            const data = error.response.data as any;
-            if (data?.detail?.includes('expired')) {
-              dispatchAuthEvent(AUTH_EVENTS.TOKEN_EXPIRED);
-            } else {
-              dispatchAuthEvent(AUTH_EVENTS.UNAUTHORIZED);
-            }
-            
-            // Limpar a marcação após um curto período
-            setTimeout(() => {
-              window.sessionStorage.removeItem('processing_auth_event');
-            }, 2000);
-          }
-        }
-      }
+    // BYPASS AUTHENTICATION: Log errors but don't handle auth errors specially
+    console.log('API Error Bypass:', error);
+    
+    // For debugging, if we get a 401 response, log it but don't trigger auth events
+    if (error.response && error.response.status === 401) {
+      console.warn('BYPASSED AUTH: 401 Unauthorized response would normally trigger auth events');
     }
+    
     return Promise.reject(error);
   }
 )

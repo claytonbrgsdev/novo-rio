@@ -108,87 +108,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('AuthProvider:set user=', user);
   }, [user]);
 
-  // Check for existing auth token on mount
+  // BYPASS AUTHENTICATION FOR DEBUGGING
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        console.log('AuthProvider: Starting authentication check...');
-        
-        const token = localStorage.getItem(AUTH_STORAGE_KEYS.TOKEN);
-        console.log('AuthProvider: Initial token check=', token ? `${token.substring(0, 15)}...` : 'null');
-        
-        if (!token) {
-          console.log('AuthProvider: No token found, not authenticated');
-          setAuthState({
-            isAuthenticated: false,
-            isLoading: false,
-            user: null,
-            error: null
-          });
-          return;
-        }
-        
-        // Validate token with the server
-        console.log('AuthProvider: Validating token with server...');
-        try {
-          // Call the token validation endpoint
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/validate`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (!response.ok) {
-            console.log('AuthProvider: Token validation failed:', response.status);
-            throw new Error('Token validation failed');
-          }
-          
-          const validationData = await response.json();
-          console.log('AuthProvider: Token validated successfully', validationData);
-          
-          // Use the validation data directly to set user
-          const userData = {
-            id: validationData.id, // Usando 'id' diretamente em vez de 'user_id'
-            email: validationData.email,
-            player_id: validationData.player_id
-          };
-          console.log('AuthProvider: Setting user from validation data:', userData);
-          
-          setAuthState({
-            isAuthenticated: true,
-            isLoading: false,
-            user: userData,
-            error: null
-          });
-          
-          // If player_id is null, we should redirect to character customization
-          if (validationData.player_id === null && window.location.pathname === '/game') {
-            console.log('AuthProvider: Player ID is null, should redirect to character customizer');
-            // Will be handled by game page component
-          }
-        } catch (validationError) {
-          console.error('AuthProvider: Token validation error:', validationError);
-          // Clear token and throw error to trigger catch block
-          localStorage.removeItem(AUTH_STORAGE_KEYS.TOKEN);
-          localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
-          throw new Error('Invalid token');
-        }
-      } catch (error) {
-        console.error("Error checking auth state:", error);
-        // Clear local storage on auth error
-        localStorage.removeItem(AUTH_STORAGE_KEYS.TOKEN);
-        localStorage.removeItem(AUTH_STORAGE_KEYS.USER);
-        
-        setAuthState({
-          isAuthenticated: false,
-          isLoading: false,
-          user: null,
-          error: "Falha ao verificar a autenticação"
-        });
-      }
+    console.log('AuthProvider: AUTHENTICATION BYPASS ENABLED FOR DEBUGGING');
+    
+    // Create dummy user data for debugging
+    const dummyUser = {
+      id: 1,
+      email: 'debug@example.com',
+      player_id: 1  // Set a valid player_id to avoid character customization
     };
     
-    checkAuth();
+    // Save dummy token and user to localStorage
+    const dummyToken = 'debug_token_bypass_authentication';
+    localStorage.setItem(AUTH_STORAGE_KEYS.TOKEN, dummyToken);
+    localStorage.setItem(AUTH_STORAGE_KEYS.USER, JSON.stringify(dummyUser));
+    
+    console.log('AuthProvider: Setting dummy user for debug:', dummyUser);
+    
+    // Set authenticated state
+    setAuthState({
+      isAuthenticated: true,
+      isLoading: false,
+      user: dummyUser,
+      error: null
+    });
   }, []);
 
   // Definir a query de dados do jogador

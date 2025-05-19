@@ -16,11 +16,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/character/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/character/page.js"
-    ],
     "/game/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

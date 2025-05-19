@@ -9,11 +9,11 @@ import { Save, Trash2, X } from "lucide-react"
 interface SaveGameModalProps {
   isOpen: boolean
   onClose: () => void
-  gameState: any
-  onSaveComplete: () => void
+  characterData: any
+  onSave: (saveData: any) => void
 }
 
-export default function SaveGameModal({ isOpen, onClose, gameState, onSaveComplete }: SaveGameModalProps) {
+export default function SaveGameModal({ isOpen, onClose, characterData, onSave }: SaveGameModalProps) {
   const { user } = useAuth()
   const [saveName, setSaveName] = useState("")
   const [existingSaves, setExistingSaves] = useState<GameSaveData[]>([])
@@ -56,14 +56,14 @@ export default function SaveGameModal({ isOpen, onClose, gameState, onSaveComple
       if (!user) throw new Error("Usuário não autenticado")
       const saveData = {
         save_name: saveName,
-        game_state: gameState,
+        game_state: characterData,
       }
 
       await apiService.post(`/players/${user.id}/saves`, saveData)
 
       setMessage({ type: "success", text: "Jogo salvo com sucesso!" })
       setSaveName("")
-      onSaveComplete()
+      onSave(saveData)
 
       // Recarregar saves após salvar
       fetchExistingSaves()
@@ -86,13 +86,13 @@ export default function SaveGameModal({ isOpen, onClose, gameState, onSaveComple
       if (!user) throw new Error("Usuário não autenticado")
       const saveData = {
         save_name: existingSaves.find((save) => save.id === saveId)?.save_name || "Save sobrescrito",
-        game_state: gameState,
+        game_state: characterData,
       }
 
       await apiService.put(`/players/${user.id}/saves/${saveId}`, saveData)
 
       setMessage({ type: "success", text: "Save sobrescrito com sucesso!" })
-      onSaveComplete()
+      onSave(saveData)
 
       // Recarregar saves após sobrescrever
       fetchExistingSaves()

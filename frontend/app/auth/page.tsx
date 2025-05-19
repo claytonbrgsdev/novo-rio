@@ -1,8 +1,21 @@
 "use client"
 
+import { Suspense } from "react"
 import AuthForm from "@/components/auth/auth-form"
 import LeafIcon from "@/components/hand-drawn/leaf"
 import SproutIcon from "@/components/hand-drawn/sprout"
+
+function AuthFormWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-md p-8 rounded-lg bg-paper-100 shadow-lg border-2 border-olive-300">
+        <div className="text-center">Carregando...</div>
+      </div>
+    }>
+      <AuthForm />
+    </Suspense>
+  )
+}
 
 export default function AuthPage() {
   return (
@@ -34,9 +47,9 @@ export default function AuthPage() {
           <p className="text-lg text-olive-800 mt-2">Refloreste uma área devastada pela plantação de soja</p>
         </div>
 
-        <AuthForm />
+        <AuthFormWrapper />
 
-        <div className="mt-8 text-olive-700 text-sm">© 2023 Novo Rio. Todos os direitos reservados.</div>
+        <div className="mt-8 text-olive-700 text-sm"> 2023 Novo Rio. Todos os direitos reservados.</div>
       </div>
     </div>
   )

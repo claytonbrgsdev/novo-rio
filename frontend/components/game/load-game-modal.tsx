@@ -9,10 +9,10 @@ import { Trash2, X, Download } from "lucide-react"
 interface LoadGameModalProps {
   isOpen: boolean
   onClose: () => void
-  onLoadGame: (gameState: any) => void
+  onLoad: (loadData: any) => void
 }
 
-export default function LoadGameModal({ isOpen, onClose, onLoadGame }: LoadGameModalProps) {
+export default function LoadGameModal({ isOpen, onClose, onLoad }: LoadGameModalProps) {
   const { user } = useAuth()
   const [saves, setSaves] = useState<GameSaveData[]>([])
   const [loading, setLoading] = useState(false)
@@ -49,7 +49,7 @@ export default function LoadGameModal({ isOpen, onClose, onLoadGame }: LoadGameM
       const data = await apiService.get<GameSaveData>(`/players/${user.id}/saves/${saveId}`)
       if (!data) throw new Error("Save não encontrado")
 
-      onLoadGame(data.game_state)
+      onLoad(data.game_state)
       onClose()
     } catch (error: any) {
       console.error("Erro ao carregar jogo:", error)

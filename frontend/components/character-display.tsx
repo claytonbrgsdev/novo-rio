@@ -1,187 +1,610 @@
 "use client"
-import { useCharacter } from "@/hooks/useCharacter"
+import * as React from 'react'
+import { Coins, Zap } from "lucide-react"
+import { usePlayer } from "@/hooks/usePlayer"
+import { cn } from "@/lib/utils"
+
+export type CharacterSize = 'small' | 'medium' | 'large'
+export type ToolId = 'shovel' | 'sickle' | 'machete' | 'watering_can'
+type CharacterPart = 'base' | 'body' | 'head' | 'tool'
 
 interface CharacterDisplayProps {
-  size?: "small" | "medium" | "large"
+  size?: CharacterSize
   showName?: boolean
   showTool?: boolean
+  headId?: number
+  bodyId?: number
+  toolId?: ToolId
+  className?: string
+  onLoad?: () => void
+  onError?: (error: Error) => void
+  createNewCharacter?: () => void
+  isQuadrantExpanded?: boolean
 }
 
-export default function CharacterDisplay({
-  size = "medium",
+// Character assets configuration
+const CHARACTER_ASSETS = {
+  baseBodyUrl: '/characters/base.png',
+  dimensions: {
+    small: { w: 100, h: 140 },
+    medium: { w: 150, h: 200 },
+    large: { w: 200, h: 280 },
+  },
+  // We'll add other assets as we implement them
+}
+
+export function CharacterDisplay({
+  size = 'medium',
   showName = false,
   showTool = true,
+  headId = 1,
+  bodyId = 1,
+  toolId = 'shovel',
+  className = '',
+  onLoad,
+  onError,
+  createNewCharacter,
+  isQuadrantExpanded = false,
 }: CharacterDisplayProps) {
-  const { character, isLoading } = useCharacter()
+  const [loadedParts, setLoadedParts] = React.useState<Set<CharacterPart>>(new Set())
+  const [error, setError] = React.useState<Error | null>(null)
 
-  // Tamanhos baseados na prop size
-  const dimensions = {
-    small: { width: 120, height: 120 },
-    medium: { width: 180, height: 180 },
-    large: { width: 300, height: 300 },
-  }
-
-  // URLs para as imagens do personagem
-  const baseBodyUrl = "/personagens/CAMADA BAIXO corpo base.png"
-
-  // Mapeamento de IDs para URLs de corpos
-  const bodyUrls: Record<number, string> = {
-    1: "/personagens/CAMADA MEIO corpos/1.png",
-    2: "/personagens/CAMADA MEIO corpos/2.png",
-    3: "/personagens/CAMADA MEIO corpos/3.png",
-    4: "/personagens/CAMADA MEIO corpos/4.png",
-    5: "/personagens/CAMADA MEIO corpos/5.png",
-    6: "/personagens/CAMADA MEIO corpos/6.png",
-    7: "/personagens/CAMADA MEIO corpos/7.png",
-    8: "/personagens/CAMADA MEIO corpos/8.png",
-    9: "/personagens/CAMADA MEIO corpos/9.png",
-    10: "/personagens/CAMADA MEIO corpos/10.png",
-    11: "/personagens/CAMADA MEIO corpos/11.png",
-    12: "/personagens/CAMADA MEIO corpos/12.png",
-  }
-
-  // Mapeamento de IDs para URLs de cabeças
-  const headUrls: Record<number, string> = {
-    1: "/personagens/CAMADA CIMA cabeças/1.png",
-    2: "/personagens/CAMADA CIMA cabeças/2.png",
-    3: "/personagens/CAMADA CIMA cabeças/3.png",
-    4: "/personagens/CAMADA CIMA cabeças/4.png",
-    5: "/personagens/CAMADA CIMA cabeças/5.png",
-    6: "/personagens/CAMADA CIMA cabeças/6.png",
-    7: "/personagens/CAMADA CIMA cabeças/7.png",
-    8: "/personagens/CAMADA CIMA cabeças/8.png",
-    9: "/personagens/CAMADA CIMA cabeças/9.png",
-    10: "/personagens/CAMADA CIMA cabeças/10.png",
-    11: "/personagens/CAMADA CIMA cabeças/11.png",
-    12: "/personagens/CAMADA CIMA cabeças/12.png",
-    13: "/personagens/CAMADA CIMA cabeças/13.png",
-    14: "/personagens/CAMADA CIMA cabeças/14.png",
-    15: "/personagens/CAMADA CIMA cabeças/15.png",
-    16: "/personagens/CAMADA CIMA cabeças/16.png",
-    17: "/personagens/CAMADA CIMA cabeças/17.png",
-    18: "/personagens/CAMADA CIMA cabeças/18.png",
-    19: "/personagens/CAMADA CIMA cabeças/19.png",
-    20: "/personagens/CAMADA CIMA cabeças/20.png",
-  }
-
-  // Mapeamento de IDs para URLs de ferramentas
-  const toolUrls: Record<string, string> = {
-    shovel: "/personagens/CAMADA CIMA ferramentas/PA.png",
-    sickle: "/personagens/CAMADA CIMA ferramentas/FOICE.png",
-    machete: "/personagens/CAMADA CIMA ferramentas/FACAO.png",
-    watering_can: "/personagens/CAMADA CIMA ferramentas/REGADOR.png",
-  }
-
-  // Função para obter o tamanho apropriado para cada cabeça
-  const getHeadSize = (headId: number): string => {
-    // Cabeças que precisam ser diminuídas: 6, 9, 10, 11, 19
-    if ([6, 9, 10, 11, 19].includes(headId)) {
-      return "22%" // Tamanho menor
+  // Container dimensions based on size with responsive adjustments
+  const getContainerStyles = () => {
+    if (isQuadrantExpanded) {
+      return {
+        small: 'w-full max-w-[60px] aspect-[5/7]',  // Slightly larger for better visibility
+        medium: 'w-full max-w-[90px] aspect-[3/4]',  // Adjusted for better proportions
+        large: 'w-full h-full max-h-[35vh] aspect-[5/7]', // Increased max height for better visibility
+      };
     }
-    // Cabeças que precisam ser aumentadas: 3, 13, 14, 15, 16, 18
-    else if ([3, 13, 14, 15, 16, 18].includes(headId)) {
-      return "32%" // Tamanho maior
-    }
-    // Tamanho padrão para outras cabeças
-    return "27%"
-  }
 
-  if (isLoading) {
+    return {
+      small: 'w-full max-w-[100px] aspect-[5/7]',  // Default small size
+      medium: 'w-full max-w-[150px] aspect-[3/4]', // Default medium size
+      large: 'w-full h-full max-h-[60vh] aspect-[5/7]', // Default large size
+    };
+  };
+
+  const containerStyles = getContainerStyles();
+
+  // Handle image loading
+  const handleImageLoad = React.useCallback((part: CharacterPart, url: string) => {
+    console.log(`[CharacterDisplay] Loaded ${part} image:`, url)
+    setLoadedParts(prev => {
+      const next = new Set(prev)
+      next.add(part)
+      return next
+    })
+    setError(null)
+
+    // Notify parent when all parts are loaded
+    if (part === 'base' && onLoad) {
+      onLoad()
+    }
+  }, [onLoad])
+
+  // Handle image loading errors
+  const handleImageError = React.useCallback((error: Error, type: string, url: string) => {
+    console.error(`[CharacterDisplay] Error loading ${type} image:`, error)
+    setError(error)
+    onError?.(error)
+  }, [onError])
+
+  // Base body (shadow/outline)
+  const baseBody = React.useMemo(() => {
+    const { baseBodyUrl } = CHARACTER_ASSETS
     return (
       <div
-        className="bg-amber-50 rounded-full flex items-center justify-center"
+        className="absolute inset-0 w-full h-full flex items-end justify-center"
         style={{
-          width: dimensions[size].width,
-          height: dimensions[size].height,
+          overflow: 'hidden',
+          width: '100%',
+          height: '100%',
+          // Reduced padding for better fit
+          padding: size === 'small' ? '0.5rem' : '0.75rem',
+          boxSizing: 'border-box',
+          zIndex: 1,
+          // Smooth transitions for resizing
+          transition: 'all 0.3s ease-in-out'
         }}
       >
-        <div className="animate-pulse bg-amber-200 rounded-full w-3/4 h-3/4"></div>
+        <div className="relative w-full h-full flex items-end justify-center">
+          <img
+            key="base"
+            src={baseBodyUrl}
+            alt="Character base"
+            className="h-auto w-full max-w-full"
+            style={{
+              objectFit: 'contain',
+              objectPosition: 'center bottom',
+              display: 'block',
+              margin: '0 auto',
+              maxHeight: '100%',
+              width: 'auto',
+              height: 'auto',
+              position: 'relative',
+            }}
+            onLoad={() => handleImageLoad('base', baseBodyUrl)}
+            onError={(e) => handleImageError(
+              new Error(`Failed to load base body image`),
+              'base body',
+              baseBodyUrl
+            )}
+          />
+        </div>
       </div>
     )
-  }
+  }, [handleImageLoad, handleImageError])
 
-  if (!character) {
+  // Body layer
+  const body = React.useMemo(() => {
+    if (!bodyId) return null
+    const bodyUrl = `/characters/body/${bodyId}.png`
+
     return (
       <div
-        className="bg-amber-50 rounded-full flex items-center justify-center"
+        className="absolute inset-0 w-full h-full flex items-end justify-center"
         style={{
-          width: dimensions[size].width,
-          height: dimensions[size].height,
+          overflow: 'hidden',
+          width: '100%',
+          height: '100%',
+          padding: '1rem',
+          boxSizing: 'border-box',
+          zIndex: 2
         }}
       >
-        <span className="text-amber-800 text-xs">Sem personagem</span>
+        <div className="relative w-full h-full flex items-end justify-center">
+          <img
+            key={`body-${bodyId}`}
+            src={bodyUrl}
+            alt={`Character body ${bodyId}`}
+            className="h-auto w-full max-w-full"
+            style={{
+              objectFit: 'contain',
+              objectPosition: 'center bottom',
+              display: 'block',
+              margin: '0 auto',
+              maxHeight: '100%',
+              width: 'auto',
+              height: 'auto',
+              position: 'relative'
+            }}
+            onLoad={() => handleImageLoad('body', bodyUrl)}
+            onError={(e) => handleImageError(
+              new Error(`Failed to load body image ${bodyId}`),
+              'body',
+              bodyUrl
+            )}
+          />
+        </div>
       </div>
     )
+  }, [bodyId, handleImageLoad, handleImageError])
+
+  // Tool layer
+  const tool = React.useMemo(() => {
+    if (!showTool || !toolId) return null
+    const toolUrl = `/characters/tool/${toolId}.png`
+
+    if (isQuadrantExpanded) {
+      return (
+        <div className="relative flex justify-center items-center w-full h-full">
+          <div style={{
+            width: '60%',
+            height: '60%',
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            transform: 'translateY(40%)',
+            zIndex: 4
+          }}>
+            <img
+              key={`tool-${toolId}-expanded`}
+              src={toolUrl}
+              alt={`Tool ${toolId}`}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                objectPosition: 'center',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))',
+                transform: 'rotate(-15deg)'
+              }}
+              onLoad={() => handleImageLoad('tool', toolUrl)}
+              onError={(e) => handleImageError(
+                new Error(`Failed to load tool image ${toolId}`),
+                'tool',
+                toolUrl
+              )}
+            />
+          </div>
+        </div>
+      )
+    }
+
+    // Original tool implementation for normal view
+    return (
+      <div
+        className={cn(
+          'absolute',
+          'transition-all duration-300',
+          'z-0=', // Higher z-index to ensure it's above other elements
+          {
+            'right-0 bottom-0 w-2/5 h-2/5': !isQuadrantExpanded,
+          }
+        )}
+        style={{
+          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))',
+          transform: 'translateY(-85%) rotate(-95deg) translateY(-50%)',
+        }}
+      >
+        <div className={cn(
+          'relative w-full h-full flex items-end justify-end',
+          {
+            'w-[150%] h-[150%]': !isQuadrantExpanded,
+          }
+        )}>
+          <img
+            key={`tool-${toolId}`}
+            src={toolUrl}
+            alt={`Tool ${toolId}`}
+            className={cn(
+              'h-auto max-w-full',
+              'transition-all duration-300',
+              'pointer-events-auto',
+              'opacity-100',
+              'transform-gpu',
+              {
+                'scale-150': true, // Increased scale for collapsed state
+              }
+            )}
+            style={{
+              maxHeight: '100%',
+              objectFit: 'contain',
+              objectPosition: 'right bottom',
+            }}
+            onLoad={() => handleImageLoad('tool', toolUrl)}
+            onError={(e) => handleImageError(
+              new Error(`Failed to load tool image ${toolId}`),
+              'tool',
+              toolUrl
+            )}
+          />
+        </div>
+      </div>
+    )
+  }, [toolId, showTool, isQuadrantExpanded, handleImageLoad, handleImageError])
+
+  const { player } = usePlayer()
+
+  // Balance display with responsive positioning
+  const balanceDisplay = React.useMemo(() => (
+    <div className={cn(
+      'flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm',
+      'shadow-md border border-border/50',
+      'transition-all duration-300 z-10',
+      {
+        'text-xs': isQuadrantExpanded,
+      }
+    )}>
+      <Coins className="w-3 h-3 text-yellow-500" />
+      <span className="font-mono font-medium">
+        {player?.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
+      </span>
+    </div>
+  ), [player?.balance, isQuadrantExpanded]);
+
+  // Aura display with responsive positioning
+  const auraDisplay = React.useMemo(() => (
+    <div className={cn(
+      'flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm',
+      'shadow-md border border-border/50',
+      'transition-all duration-300 z-10',
+      {
+        'text-xs': isQuadrantExpanded,
+      }
+    )}>
+      <Zap className="w-3 h-3 text-purple-400" />
+      <span className="font-mono font-medium">
+        {player?.aura !== undefined ? player.aura.toFixed(1) : '100.0'}
+      </span>
+    </div>
+  ), [player?.aura, isQuadrantExpanded]);
+
+  // Calculate head size and position based on container size and expanded state
+  const getHeadStyles = () => {
+    // Base size and position values
+    const baseValues = {
+      small: { size: 22, top: 15 },
+      medium: { size: 24, top: 13 },
+      large: { size: 26, top: 12 }
+    };
+
+    const { size: baseSize, top: baseTop } = baseValues[size] || baseValues.medium;
+
+    // Adjusted scaling when quadrant is expanded
+    const scale = isQuadrantExpanded ? 0.68 : 1;
+
+    // When expanded, adjust the top position to bring the head closer to the body
+    const topAdjustment = isQuadrantExpanded ? 15 : 0; // Slightly reduced from 20px to 15px
+
+    return {
+      size: `${baseSize * scale}%`,
+      top: `calc(${baseTop * scale}% + ${topAdjustment}px)`,
+      transition: 'all 0.3s ease-in-out'
+    };
+  };
+
+  // Head layer with responsive positioning
+  const head = React.useMemo(() => {
+    if (!headId) return null;
+    const headUrl = `/characters/head/${headId}.png`;
+
+    const { size: headSize, top: headTop } = getHeadStyles();
+
+    if (isQuadrantExpanded) {
+      // Special handling for expanded view
+      return (
+        <div className="relative w-full h-full flex items-center justify-center">
+          <div style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <div style={{
+              width: '60%',
+              height: '60%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <img
+                key={`head-${headId}-expanded`}
+                src={headUrl}
+                alt={`Character head ${headId}`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center bottom',
+                  display: 'block',
+                }}
+                onLoad={() => handleImageLoad('head', headUrl)}
+                onError={(e) => handleImageError(
+                  new Error(`Failed to load head image ${headId}`),
+                  'head',
+                  headUrl
+                )}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Original head implementation for normal view
+    return (
+      <div
+        className="absolute w-full h-full pointer-events-none"
+        style={{
+          zIndex: 3,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          height: '100%',
+          width: '100%',
+          top: headTop,
+          left: '50%',
+          transform: 'translateX(-50%)',
+        }}
+      >
+        <div
+          style={{
+            position: 'relative',
+            width: headSize,
+            height: 'auto',
+            aspectRatio: '1',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+          }}
+        >
+          <img
+            key={`head-${headId}`}
+            src={headUrl}
+            alt={`Character head ${headId}`}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              objectPosition: 'center bottom',
+              display: 'block',
+              position: 'relative',
+            }}
+            onLoad={() => handleImageLoad('head', headUrl)}
+            onError={(e) => handleImageError(
+              new Error(`Failed to load head image ${headId}`),
+              'head',
+              headUrl
+            )}
+          />
+        </div>
+      </div>
+    )
+  }, [headId, size, isQuadrantExpanded, handleImageLoad, handleImageError])
+
+  // Aura effect (simplified)
+  const auraEffect = React.useMemo(() => {
+    if (player?.aura === undefined) return null;
+
+    return (
+      <div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle, rgba(168,85,247,0.2) 0%, rgba(168,85,247,0) 70%)',
+          zIndex: 0,
+          transform: 'scale(1.1)',
+          transition: 'all 0.3s ease-in-out',
+          opacity: 1
+        }}
+      />
+    );
+  }, [player?.aura]);
+
+  // Get tool display name
+  const getToolName = (toolId: string) => {
+    const toolNames: Record<string, string> = {
+      'shovel': 'Pá',
+      'sickle': 'Foice',
+      'machete': 'Facão',
+      'watering_can': 'Regador'
+    }
+    return toolNames[toolId] || toolId
   }
 
-  const bodyId = character.body_id || 1
-  const headId = character.head_id || 1
-  const toolId = character.tool_id || "shovel"
+  // Stats overlay for balance, aura and tool
+  const statsOverlay = React.useMemo(() => (
+    <div className={cn(
+      'absolute flex flex-col gap-1.5 z-10',
+      'transition-all duration-300',
+      {
+        'bottom-12 left-2': !isQuadrantExpanded,
+        'bottom-8 left-1': isQuadrantExpanded,
+      }
+    )}>
+      {/* Balance */}
+      <div className={cn(
+        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full',
+        'bg-background/90 backdrop-blur-sm border border-border/20',
+        'shadow-md',
+        {
+          'scale-95': isQuadrantExpanded,
+          'scale-105': !isQuadrantExpanded,
+        }
+      )}>
+        <Coins className="w-4 h-4 text-yellow-500" />
+        <span className="font-mono text-sm font-medium">
+          {player?.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
+        </span>
+      </div>
+
+      {/* Aura */}
+      <div className={cn(
+        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full',
+        'bg-background/90 backdrop-blur-sm border border-border/20',
+        'shadow-md',
+        {
+          'scale-95': isQuadrantExpanded,
+          'scale-105': !isQuadrantExpanded,
+        }
+      )}>
+        <Zap className="w-4 h-4 text-purple-400" />
+        <span className="font-mono text-sm font-medium">
+          {player?.aura !== undefined ? player.aura.toFixed(1) : '100.0'}
+        </span>
+      </div>
+
+      {/* Tool */}
+      {showTool && toolId && (
+        <div className={cn(
+          'flex items-center gap-1 px-2 py-1 rounded-full',
+          'bg-background/90 backdrop-blur-sm border border-border/20',
+          'shadow-sm',
+          {
+            'scale-90': isQuadrantExpanded,
+            'scale-100': !isQuadrantExpanded,
+          }
+        )}>
+          <span className="text-xs">🪏</span>
+          <span className="font-mono text-xs font-medium">
+            {getToolName(toolId)}
+          </span>
+          <span className="text-xs">- ♾️</span>
+        </div>
+      )}
+
+      {/* Arrow indicator removed */}
+    </div>
+  ), [player?.balance, player?.aura, isQuadrantExpanded]);
 
   return (
-    <div className="flex flex-col items-center">
-      <div
-        className="relative"
-        style={{
-          width: dimensions[size].width,
-          height: dimensions[size].height,
-        }}
-      >
-        {/* Base do personagem */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            src={baseBodyUrl || "/placeholder.svg"}
-            alt="Base do personagem"
-            className="w-full h-full object-contain transform scale-150"
-          />
-        </div>
-
-        {/* Corpo */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            src={bodyUrls[bodyId] || "/placeholder.svg"}
-            alt={`Corpo ${bodyId}`}
-            className="w-full h-full object-contain transform scale-150"
-          />
-        </div>
-
-        {/* Cabeça */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img
-            src={headUrls[headId] || "/placeholder.svg"}
-            alt={`Cabeça ${headId}`}
-            className="absolute object-contain z-10"
-            style={{
-              width: getHeadSize(headId),
-              margin: "auto",
-              top: "-5%",
-              left: 0,
-              right: 0,
-              transform: "translateY(-5%)",
-            }}
-          />
-        </div>
-
-        {/* Ferramenta (se houver e se showTool for true) */}
-        {showTool && toolUrls[toolId] && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img
-              src={toolUrls[toolId] || "/placeholder.svg"}
-              alt={`Ferramenta ${toolId}`}
-              className="w-1/2 h-1/2 object-contain absolute"
-              style={{
-                bottom: "10%",
-                right: "10%",
-              }}
-            />
+    <div
+      className={cn(
+        'relative flex flex-col items-center justify-end',
+        'transition-all duration-300',
+        containerStyles[size],
+        className,
+        'overflow-visible',
+        {
+          'pb-2': isQuadrantExpanded,
+          'pb-4': !isQuadrantExpanded
+        }
+      )}
+    >
+      {/* Character container */}
+      <div className="relative w-full h-full">
+        {isQuadrantExpanded ? (
+          // Expanded quadrant view - show only head and tool
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative w-full h-full flex items-center justify-center">
+              <div className="relative" style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {head}
+              </div>
+            </div>
+            {statsOverlay}
+          </div>
+        ) : (
+          // Normal view - show full character
+          <div className="relative w-full h-full">
+            <div className="relative w-full h-full" style={{
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              paddingBottom: '20%' // Move container 20% closer to bottom edge
+            }}>
+              <div className="relative w-full" style={{
+                transform: 'translateY(7%)',
+                height: '100%'
+              }}>
+                {baseBody}
+                {body}
+                {head}
+                {showTool && tool}
+                {auraEffect}
+              </div>
+            </div>
+            {statsOverlay}
           </div>
         )}
       </div>
 
-      {/* Nome do personagem (se showName for true) */}
-      {showName && character.name && (
-        <div className="mt-2 text-center font-handwritten text-olive-800">{character.name}</div>
+      {/* Character name */}
+      {showName && (
+        <div className={cn(
+          'font-medium text-center',
+          'transition-all duration-300',
+          {
+            'text-xs mt-1': isQuadrantExpanded,
+            'text-sm mt-2': !isQuadrantExpanded,
+            'text-foreground/80': true
+          }
+        )}>
+          {player?.name || 'Sem Nome'}
+        </div>
       )}
     </div>
   )
 }
+
+export default CharacterDisplay

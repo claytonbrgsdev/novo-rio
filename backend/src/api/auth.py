@@ -30,24 +30,34 @@ async def register(user_in: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
-    Autentica um usuário e retorna um token de acesso.
+    BYPASS: Sempre autentica o usuário e retorna um token de acesso de debug.
     """
-    user = validate_user(db, form_data.username, form_data.password)
+    print(f"DEBUG: Login attempt bypassed for {form_data.username}")
+    
+    # Try to get a real user if possible
+    try:
+        # First try by email
+        user = get_user_by_email(db, form_data.username)
+        if not user and form_data.username == "debug@example.com":
+            # If we're using the debug email and user doesn't exist, try to get user with ID 1
+            user = get_user(db, 1)
+    except Exception as e:
+        print(f"DEBUG: Error getting user: {e}")
+        user = None
+    
+    # If no user found, create a dummy response
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou senha incorretos",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        print("DEBUG: Using dummy login response")
+        return {
+            "access_token": "debug_token_bypass_authentication",
+            "token_type": "bearer",
+            "player_id": 1  # Assuming player ID 1 exists or will be created
+        }
     
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email, "user_id": user.id},
-        expires_delta=access_token_expires
-    )
-    
+    # Using real user but with debug token
+    print(f"DEBUG: Using real user for login: ID={user.id}, email={user.email}")
     return {
-        "access_token": access_token,
+        "access_token": "debug_token_bypass_authentication",
         "token_type": "bearer",
         "player_id": user.player_id
     }
@@ -62,12 +72,12 @@ async def login_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Sess
 @router.get("/validate")
 async def validate_token(current_user: User = Depends(get_current_user)):
     """
-    Valida o token JWT atual e retorna as informações do usuário.
-    Retorna um erro 401 se o token for inválido ou estiver expirado.
+    BYPASS: Sempre valida o token e retorna informações do usuário de debug.
     """
+    print("DEBUG: /auth/validate endpoint called - authentication bypass enabled")
     return {
         "status": "ok", 
-        "id": current_user.id,  # Alterado para retornar 'id' em vez de 'user_id'
+        "id": current_user.id,
         "email": current_user.email,
         "player_id": current_user.player_id
     }
@@ -75,7 +85,8 @@ async def validate_token(current_user: User = Depends(get_current_user)):
 @router.get("/me", response_model=UserOut)
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """
-    Retorna informações detalhadas do usuário autenticado atual.
+    BYPASS: Retorna informações do usuário de debug.
     Usada pelo frontend para obter dados do usuário após autenticação.
     """
+    print(f"DEBUG: /auth/me endpoint called - returning user: ID={current_user.id}, email={current_user.email}")
     return current_user

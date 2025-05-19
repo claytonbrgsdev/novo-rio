@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth/auth-context"
-import { apiService } from "@/services/api"
+import { useCharacter } from "@/hooks/useCharacter"
 import type { CharacterCustomization } from "@/types/game"
 
 // Opções de personalização
@@ -27,81 +27,123 @@ const toolOptions = [
 ]
 
 export default function CharacterCreator() {
+  const router = useRouter()
   const { user } = useAuth()
+  const { 
+    character: currentCharacter, 
+    createCharacter, 
+    updateCharacter,
+    isCreating,
+    isUpdating
+  } = useCharacter()
+  
+  const isLoading = isCreating || isUpdating
+  
   const [characters, setCharacters] = useState<CharacterCustomization[]>([])
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterCustomization | null>(null)
   const [name, setName] = useState("")
   const [headId, setHeadId] = useState(1)
   const [bodyId, setBodyId] = useState(1)
   const [toolId, setToolId] = useState("shovel")
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null)
+  const [saveStatus, setSaveStatus] = useState<{ 
+    type: "error" | "success" | null; 
+    message: string 
+  } | null>(null)
 
+  // Load characters when component mounts or user changes
   useEffect(() => {
-    const fetchCharacters = async () => {
-      if (!user) return
-
-      setLoading(true)
+    const loadCharacters = async () => {
+      if (!user?.id) return
+      
       try {
-        if (!user) throw new Error("Usuário não autenticado")
-        const data = await apiService.get<CharacterCustomization[]>(`/players/${user.id}/characters`)
-
-        if (data && data.length > 0) {
-          setCharacters(data)
-          setSelectedCharacter(data[0])
-          setName(data[0].name || "")
-          setHeadId(data[0].head_id || 1)
-          setBodyId(data[0].body_id || 1)
-          setToolId(data[0].tool_id || "shovel")
+        const response = await fetch(`/api/players/${user.id}/characters`)
+        if (!response.ok) throw new Error('Failed to load characters')
+        
+        const data = await response.json()
+        const chars = Array.isArray(data) ? data : [data]
+        
+        setCharacters(chars)
+        
+        // If we have a current character, select it
+        if (currentCharacter) {
+          const existingChar = chars.find((c: any) => c.id === currentCharacter.id)
+          if (existingChar) {
+            setSelectedCharacter(existingChar)
+            setName(existingChar.name)
+            setHeadId(existingChar.head_id)
+            setBodyId(existingChar.body_id)
+            setToolId(existingChar.tool_id)
+          }
         }
-      } catch (error: any) {
-        console.error("Erro ao carregar personagens:", error)
-      } finally {
-        setLoading(false)
+      } catch (error) {
+        console.error('Error loading characters:', error)
+        setSaveStatus({ type: 'error', message: 'Erro ao carregar personagens' })
       }
     }
-
-    fetchCharacters()
-  }, [user])
+    
+    loadCharacters()
+  }, [user?.id, currentCharacter])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
-
-    setLoading(true)
-    setMessage(null)
-
+    if (!user?.id) return
+    
+    setSaveStatus(null)
+    
     try {
-      const character: CharacterCustomization = {
-        id: selectedCharacter?.id,
-        user_id: user.id,
-        name,
+      const characterData = {
+        name: name || 'Novo Personagem',
         head_id: headId,
         body_id: bodyId,
         tool_id: toolId,
       }
-
-      if (!user) throw new Error("Usuário não autenticado")
+      
+      console.log('Submitting character data:', characterData)
       
       if (selectedCharacter?.id) {
-        // Atualizar personagem existente
-        await apiService.put<CharacterCustomization>(`/players/${user.id}/characters/${selectedCharacter.id}`, character)
+        // Update existing character
+        console.log('Updating existing character:', selectedCharacter.id)
+        const result = await updateCharacter({
+          id: selectedCharacter.id,
+          data: characterData
+        })
+        
+        console.log('Update result:', result)
+        
+        // Show success message and navigate
+        setSaveStatus({
+          type: 'success',
+          message: 'Personagem atualizado com sucesso!'
+        })
+        
+        // Navigate after a short delay to show success message
+        setTimeout(() => {
+          router.push('/game')
+        }, 1000)
       } else {
-        // Criar novo personagem
-        await apiService.post<CharacterCustomization>(`/players/${user.id}/characters`, character)
-      }
-
-      setMessage({ type: "success", text: "Personagem salvo com sucesso!" })
-
-      // Recarregar personagens
-      const data = await apiService.get<CharacterCustomization[]>(`/players/${user.id}/characters`)
-      if (data) {
-        setCharacters(data)
+        // Create new character with the form data
+        console.log('Creating new character')
+        const result = await createCharacter(characterData)
+        console.log('Create result:', result)
+        
+        // Show success message and navigate
+        setSaveStatus({
+          type: 'success',
+          message: 'Personagem criado com sucesso!'
+        })
+        
+        // Navigate after a short delay to show success message
+        setTimeout(() => {
+          router.push('/game')
+        }, 1000)
       }
     } catch (error: any) {
-      setMessage({ type: "error", text: error.message || "Erro ao salvar personagem" })
-    } finally {
-      setLoading(false)
+      console.error('Error saving character:', error)
+      const errorMessage = error.response?.data?.detail || error.message || 'Erro ao salvar personagem'
+      setSaveStatus({ 
+        type: 'error', 
+        message: errorMessage
+      })
     }
   }
 
@@ -129,11 +171,11 @@ export default function CharacterCreator() {
     <div className="bg-amber-100 p-6 rounded-lg shadow-lg max-w-4xl w-full">
       <h2 className="text-2xl font-bold text-amber-900 mb-6">Criação de Personagem</h2>
 
-      {message && (
+      {saveStatus && (
         <div
-          className={`p-3 rounded mb-4 ${message.type === "error" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}
+          className={`p-3 rounded mb-4 ${saveStatus.type === "error" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}
         >
-          {message.text}
+          {saveStatus.message}
         </div>
       )}
 
@@ -282,9 +324,9 @@ export default function CharacterCreator() {
             <button
               type="submit"
               className="w-full bg-amber-600 text-white py-2 rounded hover:bg-amber-700 transition-colors disabled:opacity-50"
-              disabled={loading}
+              disabled={isLoading}
             >
-              {loading ? "Salvando..." : "Salvar Personagem"}
+              {isLoading ? "Salvando..." : "Salvar Personagem"}
             </button>
           </form>
         </div>

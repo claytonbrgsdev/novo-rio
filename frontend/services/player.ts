@@ -5,6 +5,7 @@ import type {
   UserSettings,
   CharacterCustomization
 } from '@/types/player';
+import { DEFAULT_HEAD, DEFAULT_BODY, DEFAULT_TOOL, DEFAULT_NAME } from '@/constants/character';
 
 class PlayerService {
   /**
@@ -112,15 +113,15 @@ class PlayerService {
    * Cria um personagem padrão para um novo jogador
    */
   private async createDefaultCharacter(userId: string): Promise<CharacterCustomization> {
-    const defaultCharacter: CharacterCustomization = {
+    const defaultCharacter = {
       user_id: userId,
-      name: 'Agricultor',
-      head_id: 1,
-      body_id: 1,
-      tool_id: '1',
+      name: DEFAULT_NAME,
+      head_id: DEFAULT_HEAD,
+      body_id: DEFAULT_BODY,
+      tool_id: DEFAULT_TOOL,
     };
     
-    return await apiService.post<CharacterCustomization>(`/players/${userId}/characters`, defaultCharacter);
+    return await this.createCharacter(userId, defaultCharacter);
   }
   
   /**
@@ -147,8 +148,126 @@ class PlayerService {
   /**
    * Atualiza a personalização do personagem
    */
+  // Character management methods
+  async getCharacters(userId: string | number): Promise<CharacterCustomization | CharacterCustomization[] | null> {
+    try {
+      const response = await apiService.get(`/players/${userId}/characters`)
+      
+      // Helper function to normalize character data
+      const normalizeCharacter = (char: any): CharacterCustomization => ({
+        id: char?.id,
+        name: char?.name || 'Sem Nome',
+        user_id: Number(char?.user_id || userId),
+        head_id: Number(char?.head_id || 1),
+        body_id: Number(char?.body_id || 1),
+        tool_id: char?.tool_id || 'shovel',
+        created_at: char?.created_at,
+        updated_at: char?.updated_at,
+      })
+      
+      // If response is an array, return the most recent character (highest id)
+      if (Array.isArray(response)) {
+        if (response.length === 0) return null
+        
+        // Find the character with the highest ID (most recent)
+        const mostRecent = response.reduce((prev, current) => 
+          (prev?.id && current?.id && prev.id > current.id) ? prev : current
+        )
+        
+        return normalizeCharacter(mostRecent)
+      }
+      
+      // If response is a single character object, normalize and return it
+      if (response && typeof response === 'object') {
+        // Handle case where response might be { character: Character }
+        if ('character' in response) {
+          return normalizeCharacter(response.character)
+        }
+        return normalizeCharacter(response)
+      }
+      
+      return null
+    } catch (error) {
+      console.error('Error fetching characters:', error)
+      throw error
+    }
+  }
+
+  async createCharacter(
+    userId: string | number, 
+    data: Omit<CharacterCustomization, 'id' | 'created_at' | 'updated_at' | 'user_id'>
+  ): Promise<CharacterCustomization> {
+    try {
+      console.log(`Creating character for user ${userId} with data:`, data)
+      
+      // Prepare the payload - only include the fields the backend expects
+      const payload = {
+        name: data.name,
+        head_id: Number(data.head_id),
+        body_id: Number(data.body_id),
+        tool_id: data.tool_id,
+      }
+      
+      console.log('Sending character creation request with payload:', payload)
+      const response = await apiService.post<CharacterCustomization>(
+        `/players/${userId}/characters`,
+        payload
+      )
+      
+      console.log('Character creation response:', response)
+      
+      // Ensure consistent typing in the response
+      return {
+        ...response,
+        user_id: Number(response.user_id),
+        head_id: Number(response.head_id),
+        body_id: Number(response.body_id),
+      }
+    } catch (error) {
+      console.error('Error creating character:', error)
+      throw error
+    }
+  }
+
   async updateCharacter(character: CharacterCustomization): Promise<CharacterCustomization> {
-    return await apiService.put<CharacterCustomization>(`/players/${character.user_id}/characters/${character.id}`, character);
+    try {
+      if (character.id === undefined) {
+        throw new Error('Cannot update character without an ID')
+      }
+      
+      if (!character.user_id) {
+        throw new Error('Cannot update character without a user ID')
+      }
+      
+      console.log(`Updating character ${character.id} for user ${character.user_id} with data:`, character)
+      
+      // Prepare the payload - only include the fields the backend expects
+      const payload = {
+        name: character.name,
+        head_id: Number(character.head_id),
+        body_id: Number(character.body_id),
+        tool_id: character.tool_id,
+      }
+      
+      console.log('Sending character update request with payload:', payload)
+      const response = await apiService.put<CharacterCustomization>(
+        `/players/${character.user_id}/characters/${character.id}`,
+        payload
+      )
+      
+      console.log('Character update response:', response)
+      
+      // Ensure consistent typing in the response
+      return {
+        ...response,
+        user_id: Number(response.user_id),
+        head_id: Number(response.head_id),
+        body_id: Number(response.body_id),
+      }
+    } catch (error) {
+      console.error('Error updating character:', error)
+      throw error
+    }
   }
 }
 

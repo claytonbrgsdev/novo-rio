@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiService } from "@/services/api"
 import { usePlayerContext } from "@/context/PlayerContext"
 import type { components, operations } from "@/types/api"
@@ -11,34 +11,27 @@ export function usePlayer() {
   const { currentPlayerId } = usePlayerContext()
   const queryClient = useQueryClient()
 
-  const playerQuery = useQuery<Player>(
-    ["player", currentPlayerId],
-    () => apiService.get<Player>(`/players/${currentPlayerId}`),
-    {
-      enabled: !!currentPlayerId,
-      staleTime: 1000 * 60 * 5, // 5 minutos
-      onSuccess: (data) => {
-        // Atualizar o contexto do jogador se necessário
-      },
-    },
-  )
+  const playerQuery = useQuery({
+    queryKey: ["player", currentPlayerId],
+    queryFn: () => apiService.get<Player>(`/players/${currentPlayerId}`),
+    enabled: !!currentPlayerId,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  })
 
-  const updatePlayerMutation = useMutation<Player, Error, Partial<PlayerUpdate>>(
-    (playerData) => apiService.patch<Player>(`/players/${currentPlayerId}`, playerData),
-    {
-      onSuccess: () => {
-        // Invalidar a query para recarregar os dados
-        queryClient.invalidateQueries(["player", currentPlayerId])
-      },
+  const updatePlayerMutation = useMutation({
+    mutationFn: (playerData: Partial<PlayerUpdate>) => apiService.patch<Player>(`/players/${currentPlayerId}`, playerData),
+    onSuccess: () => {
+      // Invalidar a query para recarregar os dados
+      queryClient.invalidateQueries({ queryKey: ["player", currentPlayerId] })
     },
-  )
+  })
 
   return {
     player: playerQuery.data,
-    isLoading: playerQuery.isLoading,
+    isLoading: playerQuery.isPending,
     isError: playerQuery.isError,
     error: playerQuery.error,
     updatePlayer: updatePlayerMutation.mutate,
-    isUpdating: updatePlayerMutation.isLoading,
+    isUpdating: updatePlayerMutation.isPending,
   }
 }

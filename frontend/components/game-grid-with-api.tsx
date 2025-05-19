@@ -128,6 +128,10 @@ export default function GameGridWithApi({ viewType, activeQuadrant, onQuadrantCl
   if (viewType === "village") {
     return (
       <div className="h-full p-5">
+        <p>Village view not implemented yet</p>
+      </div>
+    )
+  }
         <div className="bg-amber-100 h-full rounded-lg p-5 relative">
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-medium text-amber-900">Vila</h2>
@@ -252,23 +256,15 @@ export default function GameGridWithApi({ viewType, activeQuadrant, onQuadrantCl
   if (quadrantsLoading || !activeQuadrantData) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="w-16 h-16 border-t-4 border-olive-600 rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-t-4 border-green-600 rounded-full animate-spin"></div>
       </div>
     )
   }
 
   return (
-    <div className="h-full p-5">
-      <div className="bg-green-600 h-full rounded-lg p-3">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-white font-medium text-lg">Quadrante {activeQuadrant}</h2>
-          <button
-            className="bg-green-700 text-white px-3 py-1.5 rounded text-sm hover:bg-green-800 transition-colors"
-            onClick={() => onQuadrantClick("")}
-          >
-            Voltar
-          </button>
-        </div>
+    <div className="h-full">
+      <div className="bg-green-500 h-full rounded-lg">
+        <div className="grid grid-cols-5 grid-rows-3 gap-0.5 h-full p-0.5">
 
         {/* Feedback de ação */}
         {actionFeedback && (

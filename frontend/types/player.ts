@@ -34,12 +34,13 @@ export interface UserSettings {
 }
 
 export interface CharacterCustomization {
-  id?: string | number
-  user_id: string | number
+  id?: number
+  user_id: number
+  player_id?: number
   name: string
   head_id: number
   body_id: number
-  tool_id: string
+  tool_id?: string
   created_at?: string
   updated_at?: string
 }
