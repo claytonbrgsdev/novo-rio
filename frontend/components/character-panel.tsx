@@ -1,62 +1,87 @@
 "use client"
-import { useState, useEffect } from "react"
+
 import { useRouter } from "next/navigation"
-import type { ViewType } from "@/lib/types"
-import CharacterDisplay, { type ToolId } from "./character-display"
-import { useCharacter } from "@/hooks/useCharacter"
+import { useEffect, useState, useRef } from "react"
+import { CharacterDisplay } from "./character-display"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DEFAULT_HEAD, DEFAULT_BODY, DEFAULT_TOOL } from "@/constants/character"
 import { ErrorBoundary } from "./error-boundary"
+import { useCharacter } from "@/hooks/useCharacter"
+import { cn } from "@/lib/utils"
+import { DEFAULT_HEAD, DEFAULT_BODY, DEFAULT_TOOL } from "@/constants/character"
+
+type ToolId = 'shovel' | 'sickle' | 'machete' | 'watering_can'
 
 interface CharacterPanelProps {
-  currentView?: ViewType
-  onViewChange?: (view: ViewType) => void
+  className?: string
+  currentView?: string
+  onViewChange?: (view: string) => void
   activeQuadrant?: string | null
   isQuadrantExpanded?: boolean
 }
 
-export default function CharacterPanel({ 
+export function CharacterPanel({ 
+  className, 
   currentView, 
   onViewChange, 
-  activeQuadrant = null,
-  isQuadrantExpanded = false
-}: CharacterPanelProps = {}) {
+  activeQuadrant, 
+  isQuadrantExpanded = false 
+}: CharacterPanelProps) {
   const router = useRouter()
   const { character, isLoading: isFetching } = useCharacter()
   const [avatarLoaded, setAvatarLoaded] = useState(false)
+  const [shouldShowCharacter, setShouldShowCharacter] = useState(false)
+  const prevCharacterId = useRef<string | null>(null)
 
+  // Handle character changes and loading states
   useEffect(() => {
-    setAvatarLoaded(false)
+    if (character?.id) {
+      setShouldShowCharacter(true)
+      // Only reset avatar loaded state if we have a new character
+      if (String(character.id) !== prevCharacterId.current) {
+        setAvatarLoaded(false)
+        prevCharacterId.current = String(character.id)
+      }
+    } else {
+      setShouldShowCharacter(false)
+      setAvatarLoaded(false)
+      prevCharacterId.current = null
+    }
   }, [character?.id])
 
-  const hasCharacter = !!character
-  const isReady = hasCharacter && avatarLoaded;
+  const isReady = !!character && avatarLoaded
 
   const handleCreateCharacter = () => {
-    router.push('/character')
+    router.push("/character-creation")
   }
 
   return (
-    <div className=" flex flex-col bg-gradient-to-b from-paper-50 to-paper-100 font-handwritten shadow-md rounded-md overflow-hidden">
-      {/* Character Header */}
-      <div className="h-16 bg-gradient-to-r from-amber-700 to-amber-600 text-white px-4 py-3 text-xl font-bold flex items-center justify-center">
-        <h3 className="panel-title uppercase tracking-wide">
-          {isFetching ? 'Carregando...' : (character?.name || 'Meu Personagem')}
-        </h3>
+    <div className={cn(
+      "relative flex flex-col h-full bg-gradient-to-b from-amber-50 to-amber-100 rounded-lg",
+      "border border-amber-200 overflow-hidden",
+      "transition-all duration-300",
+      className
+    )}>
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-amber-200 bg-gradient-to-r from-amber-100 to-amber-50">
+        <h2 className="text-lg font-bold text-amber-900 flex items-center justify-between">
+          <span>Personagem</span>
+          {isReady && character && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                Nível 1
+              </span>
+            </div>
+          )}
+        </h2>
       </div>
-      
-      <div className="flex-1 relative overflow-hidden bg-gradient-to-br from-paper-100 to-paper-300 m-0">
-        {/* Decorative background */}
-        <div className="absolute inset-0 opacity-15">
-          <div className="absolute inset-0 bg-[url('/pattern-leaves.svg')] bg-repeat opacity-10 animate-float-slow"></div>
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/20 to-transparent"></div>
-        </div>
-        
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col p-4 overflow-hidden">
         {isFetching ? (
           <div className="h-full flex items-center justify-center">
             <Skeleton className="h-32 w-32 rounded-full" />
           </div>
-        ) : hasCharacter ? (
+        ) : shouldShowCharacter ? (
           /* Character display */
           <div className="relative w-full h-full z-10 flex flex-col items-center justify-center">
             <div className="relative w-full flex-1 flex items-center justify-center">
@@ -68,21 +93,24 @@ export default function CharacterPanel({
                 }
               >
                 <div className="w-full h-full px-4 pb-4 pt-2">
-                  <CharacterDisplay 
-                    size="large"
-                    headId={character?.head_id}
-                    bodyId={character?.body_id}
-                    toolId={character?.tool_id as ToolId | undefined}
-                    showName={false}
-                    showTool
-                    className="w-full h-full"
-                    key={`${character?.body_id}-${character?.head_id}-${character?.tool_id}`}
-                    onLoad={() => setAvatarLoaded(true)}
-                    onError={(error) => {
-                      console.error('Character display error:', error)
-                    }}
-                    isQuadrantExpanded={isQuadrantExpanded}
-                  />
+                  {character && (
+                    <CharacterDisplay 
+                      size="large"
+                      headId={character.head_id}
+                      bodyId={character.body_id}
+                      toolId={character.tool_id as ToolId}
+                      showName={false}
+                      showTool={true}
+                      className="w-full h-full"
+                      key={`char-display-${character.id}`}
+                      onLoad={() => setAvatarLoaded(true)}
+                      onError={(error) => {
+                        console.error("Character display error:", error)
+                        setAvatarLoaded(false)
+                      }}
+                      isQuadrantExpanded={false}
+                    />
+                  )}
                 </div>
               </ErrorBoundary>
             </div>
@@ -95,6 +123,10 @@ export default function CharacterPanel({
                 headId={DEFAULT_HEAD}
                 bodyId={DEFAULT_BODY}
                 toolId={DEFAULT_TOOL}
+                showName={false}
+                showTool={false}
+                className="opacity-50"
+                isQuadrantExpanded={false}
               />
             </div>
             <p className="text-amber-800 mb-4">Você ainda não criou um personagem.</p>

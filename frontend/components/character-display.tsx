@@ -46,8 +46,34 @@ export function CharacterDisplay({
   createNewCharacter,
   isQuadrantExpanded = false,
 }: CharacterDisplayProps) {
+  // All hooks must be called unconditionally at the top level
   const [loadedParts, setLoadedParts] = React.useState<Set<CharacterPart>>(new Set())
   const [error, setError] = React.useState<Error | null>(null)
+  const { player } = usePlayer()
+  
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleImageLoad = React.useCallback((part: CharacterPart, url: string) => {
+    console.log(`[CharacterDisplay] Loaded ${part} image:`, url)
+    setLoadedParts(prev => {
+      const next = new Set(prev)
+      next.add(part)
+      return next
+    })
+    setError(null)
+
+    // Notify parent when all parts are loaded
+    if (part === 'base' && onLoad) {
+      onLoad()
+    }
+  }, [onLoad])
+
+
+  // Handle image loading errors
+  const handleImageError = React.useCallback((error: Error, type: string, url: string) => {
+    console.error(`[CharacterDisplay] Error loading ${type} image:`, error)
+    setError(error)
+    onError?.(error)
+  }, [onError])
 
   // Container dimensions based on size with responsive adjustments
   const getContainerStyles = () => {
@@ -66,32 +92,7 @@ export function CharacterDisplay({
     };
   };
 
-  const containerStyles = getContainerStyles();
-
-  // Handle image loading
-  const handleImageLoad = React.useCallback((part: CharacterPart, url: string) => {
-    console.log(`[CharacterDisplay] Loaded ${part} image:`, url)
-    setLoadedParts(prev => {
-      const next = new Set(prev)
-      next.add(part)
-      return next
-    })
-    setError(null)
-
-    // Notify parent when all parts are loaded
-    if (part === 'base' && onLoad) {
-      onLoad()
-    }
-  }, [onLoad])
-
-  // Handle image loading errors
-  const handleImageError = React.useCallback((error: Error, type: string, url: string) => {
-    console.error(`[CharacterDisplay] Error loading ${type} image:`, error)
-    setError(error)
-    onError?.(error)
-  }, [onError])
-
-  // Base body (shadow/outline)
+  // Base body layer
   const baseBody = React.useMemo(() => {
     const { baseBodyUrl } = CHARACTER_ASSETS
     return (
@@ -101,29 +102,32 @@ export function CharacterDisplay({
           overflow: 'hidden',
           width: '100%',
           height: '100%',
-          // Reduced padding for better fit
-          padding: size === 'small' ? '0.5rem' : '0.75rem',
+          padding: '0',
           boxSizing: 'border-box',
-          zIndex: 1,
-          // Smooth transitions for resizing
-          transition: 'all 0.3s ease-in-out'
+          zIndex: 1
         }}
       >
-        <div className="relative w-full h-full flex items-end justify-center">
+        <div className="relative w-full h-full flex items-end justify-center" style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          transformOrigin: 'center bottom',
+          transform: 'scale(1)',
+          transition: 'transform 0.3s ease-in-out'
+        }}>
           <img
             key="base"
             src={baseBodyUrl}
             alt="Character base"
-            className="h-auto w-full max-w-full"
+            className="h-full w-auto mx-auto"
             style={{
               objectFit: 'contain',
               objectPosition: 'center bottom',
               display: 'block',
-              margin: '0 auto',
-              maxHeight: '100%',
+              height: '100%',
               width: 'auto',
-              height: 'auto',
-              position: 'relative',
+              maxWidth: '100%',
+              position: 'relative'
             }}
             onLoad={() => handleImageLoad('base', baseBodyUrl)}
             onError={(e) => handleImageError(
@@ -139,7 +143,7 @@ export function CharacterDisplay({
 
   // Body layer
   const body = React.useMemo(() => {
-    if (!bodyId) return null
+    if (!bodyId) return <div className="hidden" />
     const bodyUrl = `/characters/body/${bodyId}.png`
 
     return (
@@ -149,25 +153,30 @@ export function CharacterDisplay({
           overflow: 'hidden',
           width: '100%',
           height: '100%',
-          padding: '1rem',
+          padding: '0',
           boxSizing: 'border-box',
           zIndex: 2
         }}
       >
-        <div className="relative w-full h-full flex items-end justify-center">
+        <div className="relative w-full h-full flex items-end justify-center" style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          transformOrigin: 'center bottom',
+          transform: 'scale(1) translateY(0)'
+        }}>
           <img
             key={`body-${bodyId}`}
             src={bodyUrl}
             alt={`Character body ${bodyId}`}
-            className="h-auto w-full max-w-full"
+            className="h-full w-auto mx-auto"
             style={{
               objectFit: 'contain',
               objectPosition: 'center bottom',
               display: 'block',
-              margin: '0 auto',
-              maxHeight: '100%',
+              height: '100%',
               width: 'auto',
-              height: 'auto',
+              maxWidth: '100%',
               position: 'relative'
             }}
             onLoad={() => handleImageLoad('body', bodyUrl)}
@@ -182,248 +191,51 @@ export function CharacterDisplay({
     )
   }, [bodyId, handleImageLoad, handleImageError])
 
-  // Tool layer
-  const tool = React.useMemo(() => {
-    if (!showTool || !toolId) return null
-    const toolUrl = `/characters/tool/${toolId}.png`
-
-    if (isQuadrantExpanded) {
-      return (
-        <div className="relative flex justify-center items-center w-full h-full">
-          <div style={{
-            width: '60%',
-            height: '60%',
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            transform: 'translateY(40%)',
-            zIndex: 4
-          }}>
-            <img
-              key={`tool-${toolId}-expanded`}
-              src={toolUrl}
-              alt={`Tool ${toolId}`}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                objectPosition: 'center',
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))',
-                transform: 'rotate(-15deg)'
-              }}
-              onLoad={() => handleImageLoad('tool', toolUrl)}
-              onError={(e) => handleImageError(
-                new Error(`Failed to load tool image ${toolId}`),
-                'tool',
-                toolUrl
-              )}
-            />
-          </div>
-        </div>
-      )
-    }
-
-    // Original tool implementation for normal view
-    return (
-      <div
-        className={cn(
-          'absolute',
-          'transition-all duration-300',
-          'z-0=', // Higher z-index to ensure it's above other elements
-          {
-            'right-0 bottom-0 w-2/5 h-2/5': !isQuadrantExpanded,
-          }
-        )}
-        style={{
-          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))',
-          transform: 'translateY(-85%) rotate(-95deg) translateY(-50%)',
-        }}
-      >
-        <div className={cn(
-          'relative w-full h-full flex items-end justify-end',
-          {
-            'w-[150%] h-[150%]': !isQuadrantExpanded,
-          }
-        )}>
-          <img
-            key={`tool-${toolId}`}
-            src={toolUrl}
-            alt={`Tool ${toolId}`}
-            className={cn(
-              'h-auto max-w-full',
-              'transition-all duration-300',
-              'pointer-events-auto',
-              'opacity-100',
-              'transform-gpu',
-              {
-                'scale-150': true, // Increased scale for collapsed state
-              }
-            )}
-            style={{
-              maxHeight: '100%',
-              objectFit: 'contain',
-              objectPosition: 'right bottom',
-            }}
-            onLoad={() => handleImageLoad('tool', toolUrl)}
-            onError={(e) => handleImageError(
-              new Error(`Failed to load tool image ${toolId}`),
-              'tool',
-              toolUrl
-            )}
-          />
-        </div>
-      </div>
-    )
-  }, [toolId, showTool, isQuadrantExpanded, handleImageLoad, handleImageError])
-
-  const { player } = usePlayer()
-
-  // Balance display with responsive positioning
-  const balanceDisplay = React.useMemo(() => (
-    <div className={cn(
-      'flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm',
-      'shadow-md border border-border/50',
-      'transition-all duration-300 z-10',
-      {
-        'text-xs': isQuadrantExpanded,
-      }
-    )}>
-      <Coins className="w-3 h-3 text-yellow-500" />
-      <span className="font-mono font-medium">
-        {player?.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
-      </span>
-    </div>
-  ), [player?.balance, isQuadrantExpanded]);
-
-  // Aura display with responsive positioning
-  const auraDisplay = React.useMemo(() => (
-    <div className={cn(
-      'flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm',
-      'shadow-md border border-border/50',
-      'transition-all duration-300 z-10',
-      {
-        'text-xs': isQuadrantExpanded,
-      }
-    )}>
-      <Zap className="w-3 h-3 text-purple-400" />
-      <span className="font-mono font-medium">
-        {player?.aura !== undefined ? player.aura.toFixed(1) : '100.0'}
-      </span>
-    </div>
-  ), [player?.aura, isQuadrantExpanded]);
-
-  // Calculate head size and position based on container size and expanded state
-  const getHeadStyles = () => {
-    // Base size and position values
-    const baseValues = {
-      small: { size: 22, top: 15 },
-      medium: { size: 24, top: 13 },
-      large: { size: 26, top: 12 }
-    };
-
-    const { size: baseSize, top: baseTop } = baseValues[size] || baseValues.medium;
-
-    // Adjusted scaling when quadrant is expanded
-    const scale = isQuadrantExpanded ? 0.68 : 1;
-
-    // When expanded, adjust the top position to bring the head closer to the body
-    const topAdjustment = isQuadrantExpanded ? 15 : 0; // Slightly reduced from 20px to 15px
-
-    return {
-      size: `${baseSize * scale}%`,
-      top: `calc(${baseTop * scale}% + ${topAdjustment}px)`,
-      transition: 'all 0.3s ease-in-out'
-    };
-  };
-
-  // Head layer with responsive positioning
+  // Head layer
   const head = React.useMemo(() => {
-    if (!headId) return null;
-    const headUrl = `/characters/head/${headId}.png`;
+    if (!headId) return <div className="hidden" />
+    const headUrl = `/characters/head/${headId}.png`
+    
+    // Head size and position adjustments - minimal size
+    const headStyles = {
+      small: { scale: 'scale(0.2)', y: '-38%' },
+      medium: { scale: 'scale(0.25)', y: '-36%' },
+      large: { scale: 'scale(0.3)', y: '-34%' }
+    }[size] || { scale: 'scale(0.25)', y: '-36%' }
 
-    const { size: headSize, top: headTop } = getHeadStyles();
-
-    if (isQuadrantExpanded) {
-      // Special handling for expanded view
-      return (
-        <div className="relative w-full h-full flex items-center justify-center">
-          <div style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <div style={{
-              width: '60%',
-              height: '60%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <img
-                key={`head-${headId}-expanded`}
-                src={headUrl}
-                alt={`Character head ${headId}`}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  objectPosition: 'center bottom',
-                  display: 'block',
-                }}
-                onLoad={() => handleImageLoad('head', headUrl)}
-                onError={(e) => handleImageError(
-                  new Error(`Failed to load head image ${headId}`),
-                  'head',
-                  headUrl
-                )}
-              />
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Original head implementation for normal view
     return (
       <div
-        className="absolute w-full h-full pointer-events-none"
+        className="absolute inset-0 w-full h-full flex items-start justify-center"
         style={{
-          zIndex: 3,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          height: '100%',
-          width: '100%',
-          top: headTop,
-          left: '50%',
-          transform: 'translateX(-50%)',
+          zIndex: 30,
+          overflow: 'hidden',
+          padding: 0,
+          boxSizing: 'border-box',
+          pointerEvents: 'none',
+          opacity: loadedParts.has('head') ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
+          paddingTop: 'calc(5% + 5px)',
         }}
       >
-        <div
-          style={{
-            position: 'relative',
-            width: headSize,
-            height: 'auto',
-            aspectRatio: '1',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'flex-end',
-          }}
-        >
+        <div style={{
+          position: 'relative',
+          width: '25%', // Minimal width for the head
+          height: 'auto',
+          transform: `${headStyles.scale} ${headStyles.y}`,
+          transformOrigin: 'top center',
+          zIndex: 30
+        }}>
           <img
             key={`head-${headId}`}
             src={headUrl}
             alt={`Character head ${headId}`}
             style={{
               width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              objectPosition: 'center bottom',
+              height: 'auto',
               display: 'block',
-              position: 'relative',
+              objectFit: 'contain',
+              objectPosition: 'center top',
+              animation: 'float 3s ease-in-out infinite'
             }}
             onLoad={() => handleImageLoad('head', headUrl)}
             onError={(e) => handleImageError(
@@ -435,11 +247,63 @@ export function CharacterDisplay({
         </div>
       </div>
     )
-  }, [headId, size, isQuadrantExpanded, handleImageLoad, handleImageError])
+  }, [headId, size, loadedParts, handleImageLoad, handleImageError])
 
-  // Aura effect (simplified)
+  // Tool layer
+  const tool = React.useMemo(() => {
+    if (!showTool || !toolId) return <div className="hidden" />
+    const toolUrl = `/characters/tool/${toolId}.png`
+
+    return (
+      <div
+        className="absolute inset-0 w-full h-full flex items-end justify-center"
+        style={{
+          overflow: 'hidden',
+          width: '100%',
+          height: '100%',
+          padding: '0',
+          boxSizing: 'border-box',
+          zIndex: 4
+        }}
+      >
+        <div className="relative w-full h-full flex items-end justify-center" style={{
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          transformOrigin: 'center bottom',
+          transform: 'scale(1)'
+        }}>
+          <img
+            key={`tool-${toolId}`}
+            src={toolUrl}
+            alt={`Tool ${toolId}`}
+            className="h-full w-auto mx-auto"
+            style={{
+              objectFit: 'contain',
+              objectPosition: 'center bottom',
+              display: 'block',
+              height: '100%',
+              width: 'auto',
+              maxWidth: '100%',
+              position: 'relative',
+              transform: 'rotate(-10deg) translateX(10%)',
+              transformOrigin: 'bottom center'
+            }}
+            onLoad={() => handleImageLoad('tool', toolUrl)}
+            onError={(e) => handleImageError(
+              new Error(`Failed to load tool image ${toolId}`),
+              'tool',
+              toolUrl
+            )}
+          />
+        </div>
+      </div>
+    )
+  }, [toolId, showTool, handleImageLoad, handleImageError])
+
+  // Aura effect
   const auraEffect = React.useMemo(() => {
-    if (player?.aura === undefined) return null;
+    if (player?.aura === undefined) return <div className="hidden" />
 
     return (
       <div
@@ -452,98 +316,81 @@ export function CharacterDisplay({
           opacity: 1
         }}
       />
-    );
-  }, [player?.aura]);
+    )
+  }, [player?.aura])
 
-  // Get tool display name
-  const getToolName = (toolId: string) => {
-    const toolNames: Record<string, string> = {
-      'shovel': 'Pá',
-      'sickle': 'Foice',
-      'machete': 'Facão',
-      'watering_can': 'Regador'
+  // Stats overlay with balance and aura - Only show in character panel
+  const statsOverlay = React.useMemo(() => {
+    // Only show indicators in the character panel (when isQuadrantExpanded is false)
+    const isCharacterPanel = typeof window !== 'undefined' && 
+      (window.location.pathname.includes('/game') || 
+       window.location.pathname.includes('/character'));
+    
+    if (isQuadrantExpanded || !isCharacterPanel) {
+      return null;
     }
-    return toolNames[toolId] || toolId
-  }
-
-  // Stats overlay for balance, aura and tool
-  const statsOverlay = React.useMemo(() => (
-    <div className={cn(
-      'absolute flex flex-col gap-1.5 z-10',
-      'transition-all duration-300',
-      {
-        'bottom-12 left-2': !isQuadrantExpanded,
-        'bottom-8 left-1': isQuadrantExpanded,
-      }
-    )}>
-      {/* Balance */}
-      <div className={cn(
-        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full',
-        'bg-background/90 backdrop-blur-sm border border-border/20',
-        'shadow-md',
-        {
-          'scale-95': isQuadrantExpanded,
-          'scale-105': !isQuadrantExpanded,
-        }
-      )}>
-        <Coins className="w-4 h-4 text-yellow-500" />
-        <span className="font-mono text-sm font-medium">
-          {player?.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
-        </span>
-      </div>
-
-      {/* Aura */}
-      <div className={cn(
-        'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full',
-        'bg-background/90 backdrop-blur-sm border border-border/20',
-        'shadow-md',
-        {
-          'scale-95': isQuadrantExpanded,
-          'scale-105': !isQuadrantExpanded,
-        }
-      )}>
-        <Zap className="w-4 h-4 text-purple-400" />
-        <span className="font-mono text-sm font-medium">
-          {player?.aura !== undefined ? player.aura.toFixed(1) : '100.0'}
-        </span>
-      </div>
-
-      {/* Tool */}
-      {showTool && toolId && (
+    
+    return (
+      <>
+        {/* Balance - Top Left */}
         <div className={cn(
-          'flex items-center gap-1 px-2 py-1 rounded-full',
-          'bg-background/90 backdrop-blur-sm border border-border/20',
-          'shadow-sm',
-          {
-            'scale-90': isQuadrantExpanded,
-            'scale-100': !isQuadrantExpanded,
-          }
+          'absolute left-2 top-6',
+          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full',
+          'bg-background/90 backdrop-blur-sm border border-yellow-200/30',
+          'shadow-md',
+          'transition-transform duration-200 hover:scale-105',
+          'text-yellow-300',
+          'pointer-events-none z-50',
+          'drop-shadow-lg'
         )}>
-          <span className="text-xs">🪏</span>
-          <span className="font-mono text-xs font-medium">
-            {getToolName(toolId)}
+          <Coins className="w-4 h-4 text-yellow-300" />
+          <span className="font-mono text-sm font-medium">
+            {player?.balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
           </span>
-          <span className="text-xs">- ♾️</span>
         </div>
-      )}
 
-      {/* Arrow indicator removed */}
-    </div>
-  ), [player?.balance, player?.aura, isQuadrantExpanded]);
+        {/* Aura - Top Right */}
+        <div className={cn(
+          'absolute right-2 top-6',
+          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full',
+          'bg-background/90 backdrop-blur-sm border border-purple-200/30',
+          'shadow-md',
+          'transition-transform duration-200 hover:scale-105',
+          'text-purple-300',
+          'pointer-events-none z-50',
+          'drop-shadow-lg'
+        )}>
+          <Zap className="w-4 h-4 text-purple-300" />
+          <span className="font-mono text-sm font-medium">
+            {player?.aura !== undefined ? player.aura.toFixed(1) : '100.0'}
+          </span>
+        </div>
+      </>
+    )
+  }, [player?.balance, player?.aura, isQuadrantExpanded]);
 
+  // Main container with proper aspect ratio and scaling
   return (
     <div
       className={cn(
-        'relative flex flex-col items-center justify-end',
-        'transition-all duration-300',
-        containerStyles[size],
-        className,
-        'overflow-visible',
-        {
-          'pb-2': isQuadrantExpanded,
-          'pb-4': !isQuadrantExpanded
-        }
+        'relative',
+        'flex flex-col items-center justify-end',
+        'overflow-hidden',
+        className
       )}
+      style={{
+        aspectRatio: '3/4',
+        minWidth: size === 'small' ? '48px' : size === 'medium' ? '64px' : '96px',
+        width: '100%',
+        height: 'auto',
+        position: 'relative',
+        transition: 'all 0.3s ease-in-out',
+        // Prevent the character from becoming too small
+        minHeight: size === 'small' ? '64px' : size === 'medium' ? '85px' : '128px',
+        ...(isQuadrantExpanded && {
+          transform: 'scale(1.2)',
+        })
+      }}
     >
       {/* Character container */}
       <div className="relative w-full h-full">

@@ -128,7 +128,10 @@ export default function GameGrid({ viewType, activeQuadrant, onQuadrantClick }: 
   // The full implementation would be connected to the API through game-grid-with-api.tsx
   const [hoveredItem, setHoveredItem] = useState<number | null>(null)
   const [showInfo, setShowInfo] = useState(false)
+  const [hoveredQuadrant, setHoveredQuadrant] = useState<string | null>(null)
+  const [hoveredCell, setHoveredCell] = useState<number | null>(null)
 
+  // Early return for village view
   if (viewType === "village") {
     return (
       <div className="h-full p-5">
@@ -210,6 +213,7 @@ export default function GameGrid({ viewType, activeQuadrant, onQuadrantClick }: 
     )
   }
 
+  // Early return for macro view
   if (viewType === "macro") {
     // Function to determine the status/type of each lot
     const getLotType = (index: number) => {
@@ -350,10 +354,8 @@ export default function GameGrid({ viewType, activeQuadrant, onQuadrantClick }: 
     )
   }
 
+  // Medium view
   if (viewType === "medium") {
-    // Track hovered quadrant for tooltips
-    const [hoveredQuadrant, setHoveredQuadrant] = useState<string | null>(null)
-    
     // Function to determine quadrant data
     const getQuadrantData = (quadrant: string) => {
       // This would come from API in a real implementation
@@ -452,12 +454,9 @@ export default function GameGrid({ viewType, activeQuadrant, onQuadrantClick }: 
                       </div>
                     </div>
                   )}
-                  
-                  {/* User character */}
+                  {/* User character indicator - Removed to prevent duplication with character panel */}
                   {quadrantData.isUserPresent && (
-                    <div className="z-10 animate-gentle-bounce" style={{ animationDelay: "0.3s" }}>
-                      <UserCharacter size="small" showTool={true} />
-                    </div>
+                    <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-green-500 ring-2 ring-white"></div>
                   )}
                   
                   {/* Quadrant label */}
@@ -499,8 +498,7 @@ export default function GameGrid({ viewType, activeQuadrant, onQuadrantClick }: 
   }
 
   // Default: Micro view
-  // Track hovered cell for tooltips
-  const [hoveredCell, setHoveredCell] = useState<number | null>(null)
+  // All hooks must be called at the top level, so we've moved them up
   
   // Function to determine soil quality of each cell
   const getCellData = (index: number) => {
