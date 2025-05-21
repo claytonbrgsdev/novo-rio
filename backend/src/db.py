@@ -6,21 +6,24 @@ import os
 
 Base = declarative_base()
 
-# Obter URL do banco de dados do ambiente
+# Get database URL from environment
 _db_url = os.getenv("DATABASE_URL")
 
-# Sync engine and session factory - adicionado para endpoints síncronos
-# Usar mesma URL que async, convertendo se necessário
+# Sync engine and session factory for sync endpoints
 if not _db_url:
     DATABASE_URL = "sqlite:///./test.db"
-elif _db_url.startswith("sqlite+aiosqlite"):
-    DATABASE_URL = "sqlite:///" + _db_url[17:]  # remove sqlite+aiosqlite://
-elif _db_url.startswith("postgresql+asyncpg"):
-    DATABASE_URL = "postgresql://" + _db_url[19:]  # remove postgresql+asyncpg://
+elif _db_url.startswith("postgresql"):
+    # For PostgreSQL, use psycopg2 for sync
+    DATABASE_URL = _db_url
 else:
     DATABASE_URL = _db_url
-    
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+
+# Create sync engine with appropriate connection args
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(DATABASE_URL)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
@@ -34,21 +37,31 @@ def get_db():
 # Async engine and session factory
 if not _db_url:
     ASYNC_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
-elif _db_url.startswith("sqlite+aiosqlite"):
-    ASYNC_DATABASE_URL = _db_url
-elif _db_url.startswith("sqlite:///"):
-    ASYNC_DATABASE_URL = "sqlite+aiosqlite:///" + _db_url[10:]
+elif _db_url.startswith("postgresql"):
+    # For PostgreSQL, use asyncpg
+    ASYNC_DATABASE_URL = _db_url.replace("postgresql://", "postgresql+asyncpg://")
 else:
-    ASYNC_DATABASE_URL = _db_url  # outros bancos: adapte conforme necessário
-async_engine = create_async_engine(ASYNC_DATABASE_URL, connect_args={"check_same_thread": False})
+    ASYNC_DATABASE_URL = _db_url
+
+# Create async engine with appropriate connection args
+if ASYNC_DATABASE_URL.startswith("sqlite"):
+    async_engine = create_async_engine(ASYNC_DATABASE_URL, connect_args={"check_same_thread": False})
+elif ASYNC_DATABASE_URL.startswith("postgresql+asyncpg"):
+    # Para PostgreSQL usando asyncpg, não use check_same_thread
+    async_engine = create_async_engine(ASYNC_DATABASE_URL)
+else:
+    # Fallback para outros drivers
+    async_engine = create_async_engine(ASYNC_DATABASE_URL)
+
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
-def get_async_db():
+async def get_async_db():
     """Dependency for async endpoints."""
-    async def _get_db():
-        async with AsyncSessionLocal() as session:
+    async with AsyncSessionLocal() as session:
+        try:
             yield session
-    return _get_db
+        finally:
+            await session.close()
 
 def build_engine(url, poolclass=None):
     kwargs = {"connect_args": {"check_same_thread": False}}
