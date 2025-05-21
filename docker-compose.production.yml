@@ -4,18 +4,17 @@ services:
   app:
     build:
       context: ./backend
-      target: production
     restart: always
-    env_file:
-      - .env.production
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://novorio:prod_secure_password_change_me@db:5432/novorio_production
       - REDIS_URL=redis://redis:6379/0
       - ENVIRONMENT=production
-      - SECRET_KEY=${SECRET_KEY}
-      - CORS_ORIGINS=${CORS_ORIGINS}
+      - SECRET_KEY=prod_secure_key_change_me
+      - CORS_ORIGINS=https://novorioapp.com,http://localhost:8084
       - TZ=America/Sao_Paulo
       - SCHEDULER_START_AFTER_MIGRATIONS=true
+      - ADMIN_EMAIL=claytonborgesdev@gmail.com
+      - ADMIN_PASSWORD=123Senha@
     ports:
       - "8084:8084"
     depends_on:
@@ -36,16 +35,14 @@ services:
   db:
     image: postgres:13-alpine
     restart: always
-    env_file:
-      - .env.production
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=novorio
+      - POSTGRES_PASSWORD=prod_secure_password_change_me
+      - POSTGRES_DB=novorio_production
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U novorio -d novorio_production"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -53,10 +50,9 @@ services:
       - app-network
 
   redis:
-    image: redis:6-alpine
+    image: redis:7-alpine
     restart: always
-    volumes:
-      - redis_data:/data
+    command: redis-server --appendonly no
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -72,4 +68,3 @@ networks:
 volumes:
   app_data:
   postgres_data:
-  redis_data:

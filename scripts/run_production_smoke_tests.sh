@@ -88,7 +88,7 @@ PASSED_TESTS=0
 
 # Test 1: Health check
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/" "GET" "false" "" "Health Check"; then
+if run_test "/health" "GET" "false" "" "Health Check"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
