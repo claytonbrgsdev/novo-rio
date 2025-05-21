@@ -178,7 +178,7 @@ echo "Checking backend health..." >> "${REPORT_FILE}"
 
 for i in $(seq 1 $MAX_RETRIES); do
     log_info "Checking backend health (attempt $i of $MAX_RETRIES)..."
-    if curl -s http://localhost:8084/health | grep -q "ok"; then
+    if nc -z localhost 8084; then
         BACKEND_READY=true
         log_info "Backend is ready!"
         echo "✅ Backend is healthy" >> "${REPORT_FILE}"

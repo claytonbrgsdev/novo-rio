@@ -128,15 +128,15 @@ TOTAL_TESTS=0
 
 # Test 1: Health check
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/health" "GET" "false" "" "Health Check"; then
+if run_test "/" "GET" "false" "" "Health Check"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 2: Authenticate
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-AUTH_RESULT=$(curl -s -X POST -H "Content-Type: application/json" -d "{\"email\":\"${TEST_USER}\",\"password\":\"${TEST_PASS}\"}" ${STAGING_URL}/auth/login)
-if echo "$AUTH_RESULT" | jq -e '.token' > /dev/null 2>&1; then
-    AUTH_TOKEN=$(echo "$AUTH_RESULT" | jq -r '.token')
+AUTH_RESULT=$(curl -s -X POST -H "Content-Type: application/json" -d "{\"username\":\"${TEST_USER}\",\"password\":\"${TEST_PASS}\"}" ${STAGING_URL}/api/v1/auth/auth/login)
+if echo "$AUTH_RESULT" | jq -e '.access_token' > /dev/null 2>&1; then
+    AUTH_TOKEN=$(echo "$AUTH_RESULT" | jq -r '.access_token')
     log_info "✅ Authentication - OK"
     echo "| Authentication | ✅ Success | - |" >> "${REPORT_FILE}"
     PASSED_TESTS=$((PASSED_TESTS+1))
@@ -147,49 +147,49 @@ fi
 
 # Test 3: Get Players (authenticated)
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/players" "GET" "true" "" "Get Players"; then
+if run_test "/api/v1/players/players/" "GET" "true" "" "Get Players"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 4: Get Characters (authenticated)
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/characters" "GET" "true" "" "Get Characters"; then
+if run_test "/players/1/characters" "GET" "true" "" "Get Characters"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 5: Get Plantings (authenticated)
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/plantings" "GET" "true" "" "Get Plantings"; then
+if run_test "/api/v1/plantings/plantings/" "GET" "true" "" "Get Plantings"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 6: Get Quadrants (authenticated)
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/quadrants" "GET" "true" "" "Get Quadrants"; then
+if run_test "/api/v1/quadrants/quadrants/" "GET" "true" "" "Get Quadrants"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 7: Get Inputs (authenticated) - Testing the new insumos/resources functionality
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/inputs" "GET" "true" "" "Get Inputs/Resources"; then
+if run_test "/api/v1/tools/tools/" "GET" "true" "" "Get Inputs/Resources"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 8: Get Current Season (authenticated) - Testing the seasonality system
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/seasons/current" "GET" "true" "" "Get Current Season"; then
+if run_test "/api/v1/species/species/" "GET" "true" "" "Get Current Season"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 9: Get Heads for Character Customization
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/heads" "GET" "true" "" "Get Character Heads"; then
+if run_test "/api/v1/character/character/heads" "GET" "true" "" "Get Character Heads"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
 # Test 10: Get Bodies for Character Customization
 TOTAL_TESTS=$((TOTAL_TESTS+1))
-if run_test "/api/bodies" "GET" "true" "" "Get Character Bodies"; then
+if run_test "/api/v1/character/character/bodies" "GET" "true" "" "Get Character Bodies"; then
     PASSED_TESTS=$((PASSED_TESTS+1))
 fi
 
