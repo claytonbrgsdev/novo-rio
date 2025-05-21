@@ -1,5 +1,6 @@
 fastapi>=0.101.0,<0.102.0  # Atualizado para versão compatível com SQLAlchemy 2.0+
 uvicorn[standard]==0.22.0
+python-multipart>=0.0.5  # Para suporte a form data no FastAPI
 # descobrir qual dos dois esta sendo usado
 SQLAlchemy>=2.0.20,<2.1
 #sqlalchemy sql geral, pode ser postgres ou sqlite
