@@ -2,7 +2,8 @@ pydantic>=1.10,<2.0
 email-validator
 pytest
 pytest-asyncio
-fastapi[test]
+coverage>=7.0.0
+# FastAPI já está definido em requirements.txt com versão compatível
 
 # Drivers de banco de dados
 psycopg2-binary  # Driver PostgreSQL
@@ -12,3 +13,6 @@ aiosqlite        # Driver SQLite assíncrono
 ipython
 black
 isort
+
+# Dependência explícita para resolver conflitos
+httpx<0.24.0  # Compatível com fastapi[test]
