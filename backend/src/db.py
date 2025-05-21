@@ -3,6 +3,11 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker as async_sessionmaker
 import os
+import asyncio
+from contextvars import ContextVar
+
+# Context variable to store event loop for each thread
+_asyncio_event_loop = ContextVar('asyncio_event_loop', default=None)
 
 Base = declarative_base()
 
@@ -27,7 +32,18 @@ else:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
-    """Dependency for sync endpoints."""
+    """Dependency for sync endpoints.
+    Ensure that we have an event loop for each thread.
+    """
+    # Ensure we have an event loop for this thread
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        # If there's no loop, create one and store it
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        _asyncio_event_loop.set(loop)
+    
     db = SessionLocal()
     try:
         yield db
@@ -67,7 +83,20 @@ else:
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
 async def get_async_db():
-    """Dependency for async endpoints."""
+    """Dependency for async endpoints.
+    Ensure that we have an event loop for each thread.
+    """
+    # Check if we already have a loop set in the context
+    loop = _asyncio_event_loop.get()
+    if loop is None:
+        # If there's no loop, try to get the current one or create a new one
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            _asyncio_event_loop.set(loop)
+    
     async with AsyncSessionLocal() as session:
         try:
             yield session

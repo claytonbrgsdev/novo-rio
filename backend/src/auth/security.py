@@ -20,7 +20,7 @@ ALGORITHM = "HS256"  # Algoritmo de assinatura do JWT
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # Token expira em 7 dias
 
 # Esquema de autenticação
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """
