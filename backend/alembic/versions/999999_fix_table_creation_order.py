@@ -63,6 +63,21 @@ def upgrade():
         )
         op.create_index(op.f('ix_species_id'), 'species', ['id'], unique=False)
     
+    # Verifica se users existe, se não, cria primeiro
+    if not op.get_bind().dialect.has_table(op.get_bind(), 'users'):
+        op.create_table('users',
+            sa.Column('id', sa.Integer(), nullable=False),
+            sa.Column('email', sa.String(length=255), nullable=False),
+            sa.Column('hashed_password', sa.String(length=255), nullable=False),
+            sa.Column('is_active', sa.Boolean(), nullable=True, default=True),
+            sa.Column('is_admin', sa.Boolean(), nullable=True, default=False),
+            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+            sa.PrimaryKeyConstraint('id'),
+            sa.UniqueConstraint('email')
+        )
+        op.create_index(op.f('ix_users_id'), 'users', ['id'], unique=False)
+        op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    
     # Verifica se players existe, se não, cria
     if not op.get_bind().dialect.has_table(op.get_bind(), 'players'):
         op.create_table('players',
