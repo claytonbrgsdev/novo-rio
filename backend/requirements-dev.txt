@@ -3,7 +3,7 @@ email-validator
 pytest==6.2.5
 pytest-cov==2.12.1
 coverage==6.5.0
-aiosqlite==0.18.0
+aiosqlite==0.20.0
 # FastAPI já está definido em requirements.txt com versão compatível
 
 # Drivers de banco de dados
