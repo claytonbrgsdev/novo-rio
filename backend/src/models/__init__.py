@@ -2,7 +2,9 @@
 
 from .action import Action
 from .badge import Badge
+from .body import Body
 from .climate_condition import ClimateCondition
+from .head import Head
 from .item import Item
 from .plant_state_log import PlantStateLog
 from .planting import Planting
