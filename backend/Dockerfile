@@ -38,9 +38,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     GUNICORN_LOG_LEVEL=info \
     DATABASE_URL="sqlite:////data/db.sqlite3"
 
-# Install runtime dependencies
+# Install runtime dependencies including PostgreSQL client
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
