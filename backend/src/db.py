@@ -37,6 +37,12 @@ def get_db():
 # Async engine and session factory
 if not _db_url:
     ASYNC_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
+elif _db_url == "sqlite:///:memory:":
+    # Special case for in-memory SQLite
+    ASYNC_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+elif _db_url.startswith("sqlite://"):
+    # For SQLite, use aiosqlite
+    ASYNC_DATABASE_URL = _db_url.replace("sqlite://", "sqlite+aiosqlite://")
 elif _db_url.startswith("postgresql"):
     # For PostgreSQL, use asyncpg
     ASYNC_DATABASE_URL = _db_url.replace("postgresql://", "postgresql+asyncpg://")
@@ -44,13 +50,18 @@ else:
     ASYNC_DATABASE_URL = _db_url
 
 # Create async engine with appropriate connection args
-if ASYNC_DATABASE_URL.startswith("sqlite"):
-    async_engine = create_async_engine(ASYNC_DATABASE_URL, connect_args={"check_same_thread": False})
+if ASYNC_DATABASE_URL.startswith("sqlite+aiosqlite"):
+    if ":memory:" in ASYNC_DATABASE_URL:
+        # In-memory SQLite needs no connect_args
+        async_engine = create_async_engine(ASYNC_DATABASE_URL)
+    else:
+        # File-based SQLite needs check_same_thread False
+        async_engine = create_async_engine(ASYNC_DATABASE_URL, connect_args={"check_same_thread": False})
 elif ASYNC_DATABASE_URL.startswith("postgresql+asyncpg"):
-    # Para PostgreSQL usando asyncpg, não use check_same_thread
+    # PostgreSQL with asyncpg doesn't need special connect_args
     async_engine = create_async_engine(ASYNC_DATABASE_URL)
 else:
-    # Fallback para outros drivers
+    # Fallback for other drivers
     async_engine = create_async_engine(ASYNC_DATABASE_URL)
 
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
