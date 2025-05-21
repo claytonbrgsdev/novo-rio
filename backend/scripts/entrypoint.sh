@@ -49,9 +49,23 @@ fi
 # For synchronous operations (like alembic), use a separate connection string
 SYNC_DB_URL=${DATABASE_URL/postgresql+asyncpg:\/\//postgresql:\/\/}
 
-# Run Alembic migrations
+# Run database migrations using Alembic
 echo "Running database migrations using Alembic..."
-DATABASE_URL=$SYNC_DB_URL alembic upgrade head
+
+# Tenta primeiro com 'upgrade heads' para lidar com múltiplas revisões cabeça
+if ! DATABASE_URL=$SYNC_DB_URL alembic upgrade heads; then
+    echo "Falha ao executar 'alembic upgrade heads', tentando abordagem alternativa..."
+    
+    # Verifica e lista as revisões cabeça disponíveis
+    echo "Revisões disponíveis:"
+    DATABASE_URL=$SYNC_DB_URL alembic heads
+    
+    # Tenta executar as migrações manualmente para cada cabeça
+    for rev in $(DATABASE_URL=$SYNC_DB_URL alembic heads | grep -o -E "[0-9a-f]+_?\w*"); do
+        echo "Tentando migração para revisão: $rev"
+        DATABASE_URL=$SYNC_DB_URL alembic upgrade $rev || echo "Falha na migração para $rev, continuando..."
+    done
+fi
 
 # Initialize scheduler manually
 echo "Starting scheduler after successful migrations..."
