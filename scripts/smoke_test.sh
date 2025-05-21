@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-API_URL=${API_URL:-http://localhost:8000}
+API_URL=${API_URL:-http://localhost:8084}
 
 echo "1) Plantando..."
 PLANT_ID=$(curl -s -X POST "$API_URL/action/plant" \
