@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="15 0 70 160" preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+  <!-- Head outline -->
+  <path
+    d="M50,20 C60,20 65,25 70,35 C72,25 74,15 65,10 C56,5 44,5 35,10 C26,15 28,25 30,35 C35,25 40,20 50,20z"
+    stroke="black"
+    stroke-width="1.5"
+    fill="none"
+  />
+  
+  <!-- Eyes -->
+  <circle cx="42" cy="25" r="2" fill="black" />
+  <circle cx="58" cy="25" r="2" fill="black" />
+  
+  <!-- Mouth -->
+  <path d="M45,32 C50,35 55,32 55,32" stroke="black" stroke-width="1.5" fill="none" />
+  
+  <!-- Body outline -->
+  <path
+    d="M35,40 L35,90 L30,120 L35,120 L40,100 L50,95 L60,100 L65,120 L70,120 L65,90 L65,40 C65,40 60,45 50,45 C40,45 35,40 35,40z"
+    stroke="black"
+    stroke-width="1.5"
+    fill="none"
+  />
+  
+  <!-- Collar detail -->
+  <path d="M40,45 L45,50 L55,50 L60,45" stroke="black" stroke-width="1" fill="none" />
+  <path d="M45,50 L45,65 L55,65 L55,50" stroke="black" stroke-width="1" fill="none" />
+  
+  <!-- Decorative elements on clothes -->
+  <circle cx="50" cy="60" r="3" stroke="black" stroke-width="1" fill="none" />
+  <circle cx="40" cy="75" r="4" stroke="black" stroke-width="1" fill="none" />
+  <circle cx="60" cy="75" r="4" stroke="black" stroke-width="1" fill="none" />
+  
+  <!-- Arms -->
+  <path d="M35,40 L25,75 L20,85" stroke="black" stroke-width="1.5" fill="none" />
+  <path d="M65,40 L75,75 L80,85" stroke="black" stroke-width="1.5" fill="none" />
+  
+  <!-- Hands/Gloves -->
+  <circle cx="20" cy="85" r="6" stroke="black" stroke-width="1.5" fill="none" />
+  <circle cx="80" cy="85" r="6" stroke="black" stroke-width="1.5" fill="none" />
+  
+  <!-- Legs/feet -->
+  <path d="M40,100 L40,140 C40,145 37,145 35,145 C30,145 28,145 30,140" stroke="black" stroke-width="1.5" fill="none" />
+  <path d="M60,100 L60,140 C60,145 63,145 65,145 C70,145 72,145 70,140" stroke="black" stroke-width="1.5" fill="none" />
+</svg>

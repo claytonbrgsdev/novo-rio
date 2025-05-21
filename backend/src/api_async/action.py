@@ -8,7 +8,7 @@ from ..crud_async.terrain import get_terrain_async
 router = APIRouter(prefix="/async/actions", tags=["actions"])
 
 @router.post("/", response_model=dict)
-async def perform_action_async(payload: ToolUse, db: AsyncSession = Depends(get_async_db())):
+async def perform_action_async(payload: ToolUse, db: AsyncSession = Depends(get_async_db)):
     # valida terreno
     terrain = await get_terrain_async(db, payload.terrain_id)
     if not terrain:

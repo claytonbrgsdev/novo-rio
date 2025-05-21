@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.post("/", response_model=InputWithEffectsOut, summary="Apply an input/resource to a planting")
-async def create_input_endpoint(input_in: InputCreate, db: AsyncSession = Depends(get_async_db())):
+async def create_input_endpoint(input_in: InputCreate, db: AsyncSession = Depends(get_async_db)):
     """
     Apply an agricultural input/resource (water, fertilizer, compost, etc.) to a planting.
     
@@ -54,7 +54,7 @@ async def get_inputs_endpoint(
     planting_id: int = Query(None, description="Filter inputs by planting ID"),
     skip: int = 0, 
     limit: int = 100,
-    db: AsyncSession = Depends(get_async_db())
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Retrieve a list of inputs applied to plantings.
@@ -68,7 +68,7 @@ async def get_inputs_endpoint(
 
 
 @router.get("/{input_id}", response_model=InputOut, summary="Get a specific input")
-async def get_input_endpoint(input_id: int, db: AsyncSession = Depends(get_async_db())):
+async def get_input_endpoint(input_id: int, db: AsyncSession = Depends(get_async_db)):
     """
     Retrieve details of a specific input by its ID.
     """
@@ -79,7 +79,7 @@ async def get_input_endpoint(input_id: int, db: AsyncSession = Depends(get_async
 
 
 @router.delete("/{input_id}", summary="Delete an input")
-async def delete_input_endpoint(input_id: int, db: AsyncSession = Depends(get_async_db())):
+async def delete_input_endpoint(input_id: int, db: AsyncSession = Depends(get_async_db)):
     """
     Delete an input by its ID.
     """

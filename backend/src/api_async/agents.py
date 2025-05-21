@@ -7,7 +7,7 @@ import random
 router = APIRouter(prefix="/async/agents", tags=["agents"])
 
 @router.get("/", response_model=List[Dict[str, Any]])
-async def list_agents_async(terrain_id: int, db: AsyncSession = Depends(get_async_db())):
+async def list_agents_async(terrain_id: int, db: AsyncSession = Depends(get_async_db)):
     """
     Stub endpoint: retorna lista de agentes por quadrante do terreno,
     gerando dados aleatórios para demonstração.

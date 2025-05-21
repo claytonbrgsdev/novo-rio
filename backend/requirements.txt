@@ -1,9 +1,11 @@
-fastapi==0.95.2
+fastapi>=0.101.0,<0.102.0  # Atualizado para versão compatível com SQLAlchemy 2.0+
 uvicorn[standard]==0.22.0
+python-multipart>=0.0.5  # Para suporte a form data no FastAPI
 # descobrir qual dos dois esta sendo usado
 SQLAlchemy>=2.0.20,<2.1
 #sqlalchemy sql geral, pode ser postgres ou sqlite
 asyncpg==0.30.0
+psycopg2-binary>=2.9.5,<3.0.0
 
 #asyncpg (postgres) e aiosqlite (sqlite)
 aiosqlite==0.20.0
@@ -20,7 +22,5 @@ PyYAML>=6.0,<7.0
 #APScheduler para agendamento de tarefas
 APScheduler>=3.9,<4.0
 
-# Dev dependencies
-pytest==7.3.2
-pytest-asyncio==0.21.0
-httpx==0.25.0
+# Database migrations
+alembic>=1.10.0

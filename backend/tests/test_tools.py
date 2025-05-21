@@ -14,8 +14,17 @@ from sqlalchemy.orm import sessionmaker as async_sessionmaker
 # Base = declarative_base()
 
 # Async engine and session factory
-ASYNC_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test.db").replace("sqlite:///", "sqlite+aiosqlite:///")
-async_engine = create_async_engine(ASYNC_DATABASE_URL, connect_args={"check_same_thread": False})
+ASYNC_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+# Garante que o driver correto seja usado para cada tipo de database
+if ASYNC_DATABASE_URL.startswith('sqlite:///'):
+    ASYNC_DATABASE_URL = ASYNC_DATABASE_URL.replace('sqlite:///', 'sqlite+aiosqlite:///')
+elif ASYNC_DATABASE_URL.startswith('postgresql:'):
+    ASYNC_DATABASE_URL = ASYNC_DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://')
+# Cria async_engine com configurações apropriadas para o banco de dados
+if ASYNC_DATABASE_URL.startswith('sqlite'):
+    async_engine = create_async_engine(ASYNC_DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    async_engine = create_async_engine(ASYNC_DATABASE_URL)
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
 
 async def get_async_db():

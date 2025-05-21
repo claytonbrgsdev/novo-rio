@@ -11,7 +11,7 @@ from sqlalchemy import func
 
 from ..models.season import Season, SeasonType
 from ..schemas.season import SeasonCreate
-from ..services.soil_deterioration import DAILY_DETERIORATION_FACTORS
+from ..services.soil_constants import DAILY_DETERIORATION_FACTORS
 
 logger = logging.getLogger(__name__)
 
