@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
 
 from ..db import get_async_db
 from ..models.planting import Planting
@@ -21,13 +22,13 @@ router = APIRouter(prefix="/async/plantings", tags=["plantings"])
 async def list_plantings_async(
     player_id: Optional[int] = None,
     quadrant_id: Optional[int] = None,
-    db: AsyncSession = Depends(get_async_db())
+    db: AsyncSession = Depends(get_async_db)
 ):
     """List plantings with optional filters for player or quadrant (async)"""
     if player_id is not None and quadrant_id is not None:
         # Filter by both player and quadrant
         result = await db.execute(
-            db.query(Planting).filter(
+            select(Planting).where(
                 Planting.player_id == player_id,
                 Planting.quadrant_id == quadrant_id
             )
@@ -41,12 +42,12 @@ async def list_plantings_async(
         return await get_plantings_by_quadrant_async(db, quadrant_id)
     else:
         # No filters, return all
-        result = await db.execute(db.query(Planting))
+        result = await db.execute(select(Planting))
         return result.scalars().all()
 
 @router.get("/{planting_id}", response_model=PlantingSchema)
 async def get_planting_async_endpoint(
-    planting_id: int, db: AsyncSession = Depends(get_async_db())
+    planting_id: int, db: AsyncSession = Depends(get_async_db)
 ):
     """Get a planting by ID (async)"""
     planting = await get_planting_async(db, planting_id)
@@ -54,9 +55,9 @@ async def get_planting_async_endpoint(
         raise HTTPException(status_code=404, detail="Planting not found")
     return planting
 
-@router.post("/", response_model=PlantingSchema)
+@router.post("/", response_model=PlantingSchema, status_code=201)
 async def create_planting_async_endpoint(
-    planting: PlantingCreate, db: AsyncSession = Depends(get_async_db())
+    planting: PlantingCreate, db: AsyncSession = Depends(get_async_db)
 ):
     """Create a new planting in a specific slot within a quadrant (async)"""
     try:
@@ -73,7 +74,7 @@ async def create_planting_async_endpoint(
 async def update_planting_async_endpoint(
     planting_id: int,
     planting_data: PlantingUpdate,
-    db: AsyncSession = Depends(get_async_db())
+    db: AsyncSession = Depends(get_async_db)
 ):
     """Update an existing planting (async)"""
     updated_planting = await update_planting_async(db, planting_id, planting_data)
@@ -83,7 +84,7 @@ async def update_planting_async_endpoint(
 
 @router.delete("/{planting_id}", status_code=204)
 async def delete_planting_async_endpoint(
-    planting_id: int, db: AsyncSession = Depends(get_async_db())
+    planting_id: int, db: AsyncSession = Depends(get_async_db)
 ):
     """Delete a planting (async)"""
     planting = await get_planting_async(db, planting_id)

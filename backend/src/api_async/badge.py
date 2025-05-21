@@ -10,7 +10,7 @@ router = APIRouter(prefix="/async/badges", tags=["badges"])
 @router.post("/", response_model=BadgeOut)
 async def create_badge_endpoint(
     badge: BadgeCreate,
-    db: AsyncSession = Depends(get_async_db())
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Endpoint para criar badge
@@ -21,7 +21,7 @@ async def create_badge_endpoint(
 @router.get("/", response_model=List[BadgeOut])
 async def list_badges_endpoint(
     player_id: int,
-    db: AsyncSession = Depends(get_async_db())
+    db: AsyncSession = Depends(get_async_db)
 ):
     """
     Endpoint para listar badges de um jogador
