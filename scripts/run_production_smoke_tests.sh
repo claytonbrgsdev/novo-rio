@@ -41,7 +41,7 @@ run_test() {
     fi
     
     # Construir o comando curl para capturar a resposta e o código HTTP
-    local cmd="curl -s -X $method $headers -w '\n%{http_code}'"
+    local cmd="curl -v -X $method $headers -o /tmp/response.txt -w '%{http_code}'"
     
     # Adicionar dados para POST/PUT
     if [ ! -z "$data" ]; then
@@ -52,9 +52,21 @@ run_test() {
     
     # Executar o comando
     log_info "Testing endpoint: $endpoint ($method)"
-    local result=$(eval $cmd)
-    local http_code=$(echo "$result" | tail -n1)
-    local response=$(echo "$result" | sed \$d)
+    log_info "Running command: $cmd"
+    
+    local http_code=$(eval $cmd 2>/tmp/curl_debug.log || echo "0")
+    local response=""
+    if [ -f "/tmp/response.txt" ]; then
+        response=$(cat /tmp/response.txt 2>/dev/null || echo "No response")
+    else
+        response="Failed to get response"
+    fi
+    
+    # Verificar se houve erro de conexão
+    if [ "$http_code" = "0" ]; then
+        log_error "Connection error to $full_url"
+        log_error "Debug info: $(cat /tmp/curl_debug.log 2>/dev/null || echo 'No debug info')"
+    fi
     
     # Verificar código de status HTTP
     if [[ "$http_code" -ge 200 && "$http_code" -lt 300 ]]; then
