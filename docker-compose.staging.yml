@@ -4,12 +4,11 @@ services:
   app:
     build:
       context: ./backend
-      target: production
     restart: unless-stopped
     env_file:
       - .env.staging
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql://novorio:change_this_secure_password@db:5432/novorio_production
       - REDIS_URL=redis://redis:6379/0
       - ENVIRONMENT=staging
       - SECRET_KEY=${SECRET_KEY}

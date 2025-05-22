@@ -84,24 +84,39 @@ AsyncSessionLocal = async_sessionmaker(bind=async_engine, class_=AsyncSession, e
 
 async def get_async_db():
     """Dependency for async endpoints.
-    Ensure that we have an event loop for each thread.
+    This ensures proper async session management for FastAPI endpoints.
     """
-    # Check if we already have a loop set in the context
-    loop = _asyncio_event_loop.get()
-    if loop is None:
-        # If there's no loop, try to get the current one or create a new one
+    # Use AsyncSessionLocal directly - we don't need to manage the event loop here
+    # because FastAPI already does that for us in the ASGI server
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+def get_async_session():
+    """Alternative dependency for when you need to use an async session in a sync context.
+    This should be used sparingly and carefully.
+    """
+    try:
+        # Make sure we have an event loop
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             _asyncio_event_loop.set(loop)
-    
-    async with AsyncSessionLocal() as session:
+            
+        # Create a session and run it in the event loop
+        session = AsyncSessionLocal()
         try:
             yield session
         finally:
-            await session.close()
+            # Ensure session is closed properly
+            asyncio.run_coroutine_threadsafe(session.close(), loop)            
+    except Exception as e:
+        print(f"Error in get_async_session: {e}")
+        raise
 
 def build_engine(url, poolclass=None):
     kwargs = {"connect_args": {"check_same_thread": False}}

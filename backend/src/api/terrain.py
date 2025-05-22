@@ -1,13 +1,14 @@
 from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException
-from starlette.concurrency import run_in_threadpool
 from sqlalchemy.orm import Session
-from ..db import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from ..db import get_db, get_async_db
 from ..crud.terrain import create_terrain, get_terrain, get_terrains, update_terrain_crud, delete_terrain
 from ..crud.terrain_parameters import get_terrain_parameters, get_terrain_health_report
 from ..schemas.terrain import TerrainCreate, TerrainUpdate, TerrainOut
 from ..schemas.soil_health import SoilHealthReport
 from ..schemas.terrain_parameters import TerrainParametersWithHealthOut
+from ..models.terrain import Terrain
 
 router = APIRouter(prefix="/terrains", tags=["terrains"])
 
@@ -21,19 +22,35 @@ async def create_terrain_endpoint(terrain: TerrainCreate, db: Session = Depends(
 @router.get("/", response_model=List[TerrainOut],
             summary="List Terrains",
             description="Retrieves a list of terrains with pagination.")
-async def list_terrains(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def list_terrains(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_async_db)):
     """Returns a list of terrains."""
-    return await run_in_threadpool(get_terrains, db, skip, limit)
+    try:
+        result = await db.execute(Terrain.__table__.select().offset(skip).limit(limit))
+        terrains = result.fetchall()
+        return [TerrainOut.from_orm(terrain) for terrain in terrains]
+    except Exception as e:
+        print(f"Error fetching terrains: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to fetch terrains: {str(e)}"
+        )
 
 @router.get("/{terrain_id}", response_model=TerrainOut,
             summary="Get Terrain",
             description="Retrieves a terrain by its ID.")
-async def get_terrain_endpoint(terrain_id: int, db: Session = Depends(get_db)):
+async def get_terrain_endpoint(terrain_id: int, db: AsyncSession = Depends(get_async_db)):
     """Fetches a terrain by ID."""
-    db_terrain = await run_in_threadpool(get_terrain, db, terrain_id)
-    if not db_terrain:
-        raise HTTPException(status_code=404, detail="Terrain not found")
-    return db_terrain
+    try:
+        result = await db.execute(Terrain.__table__.select().where(Terrain.__table__.c.id == terrain_id))
+        db_terrain = result.fetchone()
+        if not db_terrain:
+            raise HTTPException(status_code=404, detail="Terrain not found")
+        return TerrainOut.from_orm(db_terrain)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        print(f"Error fetching terrain: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch terrain: {str(e)}")
 
 @router.put("/{terrain_id}", response_model=TerrainOut,
             summary="Update Terrain",

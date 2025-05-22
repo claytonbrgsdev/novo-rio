@@ -135,7 +135,7 @@ def create_app(session_local=None, engine=None):
     app.include_router(climate_router, prefix="/api/v1/climate-conditions", tags=["climate-conditions"])
     app.include_router(shop_item_router, prefix="/api/v1/shop-items", tags=["shop-items"])
     app.include_router(purchase_router, prefix="/api/v1/purchases", tags=["purchases"])
-    app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+    app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
     app.include_router(eko_router, prefix="/api/v1/eko", tags=["eko"])
     app.include_router(plantings_router, prefix="/api/v1/plantings", tags=["plantings"])
     app.include_router(species_router, prefix="/api/v1/species", tags=["species"])
